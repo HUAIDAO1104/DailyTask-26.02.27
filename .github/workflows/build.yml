@@ -30,7 +30,7 @@ jobs:
           echo "${{ secrets.KEYSTORE_FILE }}" | base64 --decode > release.jks
           echo "✅ release.jks 已还原，大小：$(wc -c < release.jks) bytes"
 
-            - name: 📝 生成 keystore.properties
+      - name: 📝 生成 keystore.properties
         run: |
           printf 'STORE_FILE=../release.jks\nSTORE_PASSWORD=%s\nKEY_ALIAS=%s\nKEY_PASSWORD=%s\n' \
             "${{ secrets.KEYSTORE_PASSWORD }}" \
@@ -39,7 +39,6 @@ jobs:
           echo "✅ keystore.properties 已生成"
           echo "--- 文件内容预览（密码已脱敏）---"
           sed 's/PASSWORD=.*/PASSWORD=***/' keystore.properties
-
 
       - name: 📦 缓存 Gradle 依赖
         uses: actions/cache@v4
