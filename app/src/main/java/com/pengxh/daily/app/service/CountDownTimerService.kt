@@ -11,7 +11,13 @@ import androidx.core.app.NotificationCompat
 import com.pengxh.daily.app.R
 import com.pengxh.daily.app.extensions.formatTime
 import com.pengxh.daily.app.extensions.openApplication
+import com.pengxh.daily.app.utils.EmailManager
+import com.pengxh.daily.app.utils.HolidayChecker
 import com.pengxh.daily.app.utils.LogFileManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * APP倒计时服务，解决手机灭屏后倒计时会出现延迟的问题
@@ -36,6 +42,10 @@ class CountDownTimerService : Service() {
     private val notificationId = 1001
     private var countDownTimer: CountDownTimer? = null
     private var isTimerRunning = false
+    private val emailManager by lazy { EmailManager(this) }
+
+    // 防止休息日多个任务到点时重复发邮件的标志位，每天任务重置时清空
+    private var isHolidayEmailSent = false
 
     inner class LocaleBinder : Binder() {
         fun getService(): CountDownTimerService = this@CountDownTimerService
@@ -79,7 +89,36 @@ class CountDownTimerService : Service() {
 
             override fun onFinish() {
                 isTimerRunning = false
-                openApplication(true)
+                // 打卡前先检查今天是否是工作日（在子线程中请求 API，避免阻塞主线程）
+                CoroutineScope(Dispatchers.IO).launch {
+                    val (shouldWork, reason) = HolidayChecker.shouldWorkToday()
+                    LogFileManager.writeLog("节假日检查结果：$reason")
+
+                    withContext(Dispatchers.Main) {
+                        if (shouldWork) {
+                            // 工作日或调休补班，正常打卡
+                            openApplication(true)
+                        } else {
+                            // 周末或法定节假日：直接停住，什么都不做
+                            // 【修复】不再发送 CANCEL_COUNT_DOWN_TIMER 广播。
+                            // 原来发广播会触发 MainActivity.dailyTaskRunnable 继续执行下一个任务，
+                            // 导致当天每个任务倒计时结束后都反复走这里，形成无效循环。
+                            // 正确做法是直接停住，让任务链自然结束，等明天自动重置。
+                            val notification = notificationBuilder.apply {
+                                setContentText("今天休息，已跳过全部打卡")
+                            }.build()
+                            notificationManager.notify(notificationId, notification)
+                            LogFileManager.writeLog("休息日：停止任务链，当天不再执行后续任务")
+                            // 发邮件通知用户今天跳过打卡
+                            // HolidayChecker 有当天缓存，多个任务到点时只有第一次会实际请求网络，
+                            // 但邮件只需发一次，所以用 isHolidayEmailSent 标志位控制
+                            if (!isHolidayEmailSent) {
+                                isHolidayEmailSent = true
+                                emailManager.sendEmail("打卡任务通知", reason, false)
+                            }
+                        }
+                    }
+                }
             }
         }.apply {
             start()
@@ -93,6 +132,14 @@ class CountDownTimerService : Service() {
         }.build()
         notificationManager.notify(notificationId, notification)
         isTimerRunning = false
+    }
+
+    /**
+     * 每天任务重置时调用，清空休息日邮件发送标志，为新的一天做准备
+     */
+    fun resetDailyState() {
+        isHolidayEmailSent = false
+        LogFileManager.writeLog("resetDailyState: 每日状态已重置")
     }
 
     fun cancelCountDown() {
