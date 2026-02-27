@@ -11,7 +11,14 @@ import androidx.core.app.NotificationCompat
 import com.pengxh.daily.app.R
 import com.pengxh.daily.app.extensions.formatTime
 import com.pengxh.daily.app.extensions.openApplication
+import com.pengxh.daily.app.utils.BroadcastManager
+import com.pengxh.daily.app.utils.HolidayChecker
 import com.pengxh.daily.app.utils.LogFileManager
+import com.pengxh.daily.app.utils.MessageType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * APP倒计时服务，解决手机灭屏后倒计时会出现延迟的问题
@@ -79,7 +86,29 @@ class CountDownTimerService : Service() {
 
             override fun onFinish() {
                 isTimerRunning = false
-                openApplication(true)
+                // 打卡前先检查今天是否是工作日（在子线程中请求 API，避免阻塞主线程）
+                CoroutineScope(Dispatchers.IO).launch {
+                    val (shouldWork, reason) = HolidayChecker.shouldWorkToday()
+                    LogFileManager.writeLog("节假日检查结果：$reason")
+
+                    withContext(Dispatchers.Main) {
+                        if (shouldWork) {
+                            // 工作日或调休补班，正常打卡
+                            openApplication(true)
+                        } else {
+                            // 周末或法定节假日，跳过本次打卡，通知 MainActivity 继续处理下一个任务
+                            val notification = notificationBuilder.apply {
+                                setContentText("今天休息，跳过打卡")
+                            }.build()
+                            notificationManager.notify(notificationId, notification)
+                            // 发送"取消倒计时"广播，触发 MainActivity 执行下一个任务（或结束当天任务）
+                            BroadcastManager.getDefault().sendBroadcast(
+                                this@CountDownTimerService,
+                                MessageType.CANCEL_COUNT_DOWN_TIMER.action
+                            )
+                        }
+                    }
+                }
             }
         }.apply {
             start()
