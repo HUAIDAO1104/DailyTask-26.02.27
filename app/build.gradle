@@ -30,7 +30,17 @@ android {
     signingConfigs {
         release {
             // 从 keystore.properties 读取，不在此处硬编码任何密码
-            storeFile     keystoreProperties['STORE_FILE']     ? rootProject.file(keystoreProperties['STORE_FILE'])     : null
+            // 支持两种路径写法：
+            //   STORE_FILE=release.jks        → 项目根目录
+            //   STORE_FILE=../release.jks     → 也解析到项目根目录（兼容旧配置）
+            def rawPath = keystoreProperties['STORE_FILE']
+            if (rawPath) {
+                // 统一去掉开头的 ../ 前缀，始终相对于 rootProject 目录查找
+                def normalizedPath = rawPath.replaceAll(/^\.\.\//, '')
+                storeFile = rootProject.file(normalizedPath)
+            } else {
+                storeFile = null
+            }
             storePassword keystoreProperties['STORE_PASSWORD'] ?: ''
             keyAlias      keystoreProperties['KEY_ALIAS']      ?: ''
             keyPassword   keystoreProperties['KEY_PASSWORD']   ?: ''
