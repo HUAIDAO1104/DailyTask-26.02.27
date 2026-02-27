@@ -38,6 +38,7 @@ import com.pengxh.daily.app.databinding.ActivityMainBinding
 import com.pengxh.daily.app.event.FloatViewTimerEvent
 import com.pengxh.daily.app.extensions.backToMainActivity
 import com.pengxh.daily.app.extensions.convertToTimeEntity
+import com.pengxh.daily.app.extensions.openApplication
 import com.pengxh.daily.app.extensions.diffCurrent
 import com.pengxh.daily.app.extensions.getTaskIndex
 import com.pengxh.daily.app.service.CountDownTimerService
