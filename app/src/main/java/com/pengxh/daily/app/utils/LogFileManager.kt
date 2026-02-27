@@ -103,25 +103,40 @@ object LogFileManager {
      * 写入打卡专用日志，文件名格式：checkin_log_yyyyMM.txt（如 checkin_log_202503.txt）
      * 每月自动新建一个文件，方便按月查阅打卡记录。
      *
-     * @param result  打卡结果，例如："成功"、"超时-第1次重试"、"失败-已重试3次"
-     * @param detail  附加说明，例如通知原文或失败原因
+     * @param result       打卡结果，例如："成功"、"超时-第1次重试"、"失败-已重试3次"
+     * @param detail       附加说明，例如通知原文或失败原因
+     * @param plannedTime  计划打卡时间，如 "09:00:00"（可为空）
+     * @param actualTime   实际执行时间，如 "08:57:32"（可为空）
+     *
+     * 若 plannedTime 和 actualTime 均非空，日志格式为：
+     *   [2025-03-01 08:57:32] 打卡成功（计划时间 09:00:00，实际执行 08:57:32）
+     * 否则仅输出结果和详情。
      */
     @Synchronized
-    fun writeCheckinLog(result: String, detail: String) {
+    fun writeCheckinLog(
+        result: String,
+        detail: String,
+        plannedTime: String? = null,
+        actualTime: String? = null
+    ) {
         if (!::logDir.isInitialized) {
             Log.w(kTag, "writeCheckinLog: logDir 未初始化，跳过写入")
             return
         }
         fileLock.lock()
         try {
-            // 按年月生成文件名，例如 checkin_log_202503.txt
             val monthStr = SimpleDateFormat("yyyyMM", Locale.CHINA).format(Date())
             val checkinFile = logDir.resolve("checkin_log_$monthStr.txt")
             if (!Files.exists(checkinFile)) {
                 Files.createFile(checkinFile)
             }
             val time = System.currentTimeMillis().timestampToCompleteDate()
-            val line = "[$time] [$result] $detail${System.lineSeparator()}"
+            val line = if (plannedTime != null && actualTime != null) {
+                val extra = if (detail.isNotBlank()) " | $detail" else ""
+                "[$time] $result（计划时间 $plannedTime，实际执行 $actualTime）$extra${System.lineSeparator()}"
+            } else {
+                "[$time] [$result] $detail${System.lineSeparator()}"
+            }
             Log.d(kTag, "打卡日志: $line")
             Files.write(checkinFile, line.toByteArray(), StandardOpenOption.APPEND)
         } catch (e: IOException) {

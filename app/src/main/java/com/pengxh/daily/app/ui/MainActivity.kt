@@ -93,6 +93,17 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
     private var retryWaitTimer: CountDownTimer? = null
     // ─────────────────────────────────────────────────────────────────────
 
+    // ── 当前任务时间（用于打卡日志）─────────────────────────────────────
+    private var currentPlannedTime: String = ""   // 原始设定时间，如 "09:00:00"
+    private var currentActualTime: String = ""    // 实际执行时间（加偏移），如 "08:57:32"
+    // ─────────────────────────────────────────────────────────────────────
+
+    companion object {
+        /** 供 NotificationMonitorService 读取当前任务的计划/实际打卡时间 */
+        @Volatile var lastPlannedTime: String = ""
+        @Volatile var lastActualTime: String = ""
+    }
+
     private val actions by lazy {
         listOf(
             MessageType.SHOW_MASK_VIEW.action,
@@ -379,7 +390,11 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
                     retryCount++
                     val msg = "打卡超时（第 $retryCount 次），${RETRY_INTERVAL_SECONDS} 秒后自动重试..."
                     LogFileManager.writeLog(msg)
-                    LogFileManager.writeCheckinLog("超时-第${retryCount}次重试等待", msg)
+                    LogFileManager.writeCheckinLog(
+                        "超时-第${retryCount}次重试等待", msg,
+                        plannedTime = currentPlannedTime.ifBlank { null },
+                        actualTime = currentActualTime.ifBlank { null }
+                    )
 
                     // 等待 RETRY_INTERVAL_SECONDS 秒后重新拉起目标 App
                     retryWaitTimer?.cancel()
@@ -388,7 +403,11 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
                         override fun onFinish() {
                             val retryMsg = "开始第 $retryCount 次重试打卡"
                             LogFileManager.writeLog(retryMsg)
-                            LogFileManager.writeCheckinLog("超时-第${retryCount}次重试启动", retryMsg)
+                            LogFileManager.writeCheckinLog(
+                                "超时-第${retryCount}次重试启动", retryMsg,
+                                plannedTime = currentPlannedTime.ifBlank { null },
+                                actualTime = currentActualTime.ifBlank { null }
+                            )
                             // 重新拉起目标 App，并重新开始超时倒计时
                             this@MainActivity.openApplication(true)
                             startCheckinTimeoutTimer()
@@ -399,7 +418,11 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
                     // 已达到最大重试次数，彻底失败
                     val failMsg = "打卡失败：已超时重试 $MAX_RETRY_COUNT 次，均未收到打卡成功通知"
                     LogFileManager.writeLog(failMsg)
-                    LogFileManager.writeCheckinLog("失败-已重试${MAX_RETRY_COUNT}次", failMsg)
+                    LogFileManager.writeCheckinLog(
+                        "失败-已重试${MAX_RETRY_COUNT}次", failMsg,
+                        plannedTime = currentPlannedTime.ifBlank { null },
+                        actualTime = currentActualTime.ifBlank { null }
+                    )
                     emailManager.sendEmail("打卡失败通知", failMsg, false)
                 }
             }
@@ -594,15 +617,32 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
                 )
                 binding.tipsView.setTextColor(R.color.theme_color.convertColor(context))
 
-                val pair = task.diffCurrent()
-                dailyTaskAdapter.updateCurrentTaskState(index, pair.first)
-                val diff = pair.second
+                val triple = task.diffCurrent()
+                currentPlannedTime = triple.first   // 计划时间
+                currentActualTime = triple.second   // 实际执行时间（含随机偏移）
+                val diff = triple.third             // 距实际执行时间的秒数
+
+                // 同步到 companion object，供 NotificationMonitorService 读取
+                lastPlannedTime = currentPlannedTime
+                lastActualTime = currentActualTime
+
+                dailyTaskAdapter.updateCurrentTaskState(index, currentActualTime)
+
+                // diff <= 0 表示时间已过（程序启动晚了），立即执行，不等待
+                val delayNote = if (diff <= 0) "（时间已过，立即执行）" else "（${diff}秒后执行）"
+                val logMsg = "第 $taskIndex 个任务：计划 $currentPlannedTime → 实际 $currentActualTime $delayNote"
+                LogFileManager.writeLog(logMsg)
+                LogFileManager.writeCheckinLog(
+                    "待执行", logMsg,
+                    plannedTime = currentPlannedTime,
+                    actualTime = currentActualTime
+                )
                 emailManager.sendEmail(
                     "任务执行通知",
-                    "准备执行第 $taskIndex 个任务，计划时间：${task.time}，实际时间: ${pair.first}",
+                    "准备执行第 $taskIndex 个任务，计划时间：$currentPlannedTime，实际时间: $currentActualTime$delayNote",
                     false
                 )
-                countDownTimerService?.startCountDown(taskIndex, diff)
+                countDownTimerService?.startCountDown(taskIndex, maxOf(diff, 0))
             } catch (e: IndexOutOfBoundsException) {
                 LogFileManager.writeLog("任务数组访问越界: ${e.message}")
             } catch (e: Exception) {

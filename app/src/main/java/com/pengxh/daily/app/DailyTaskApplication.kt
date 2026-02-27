@@ -3,6 +3,7 @@ package com.pengxh.daily.app
 import android.app.Application
 import androidx.room.Room.databaseBuilder
 import com.pengxh.daily.app.sqlite.DailyTaskDataBase
+import com.pengxh.daily.app.utils.AppConfigManager
 import com.pengxh.daily.app.utils.LogFileManager
 import com.pengxh.kt.lite.utils.SaveKeyValues
 import com.tencent.bugly.crashreport.CrashReport
@@ -32,6 +33,8 @@ class DailyTaskApplication : Application() {
         initApplication(this)
         SaveKeyValues.initSharedPreferences(this)
         LogFileManager.initLogFile(this)
+        // 加载持久化配置（升级后自动恢复用户设置，含版本迁移）
+        AppConfigManager.init(this)
 
         val isDebugMode = BuildConfig.DEBUG
         CrashReport.initCrashReport(this, "ecbdc9baf5", isDebugMode)

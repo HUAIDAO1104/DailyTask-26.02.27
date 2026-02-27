@@ -72,8 +72,15 @@ class NotificationMonitorService : NotificationListenerService() {
 
         // 目标应用打卡通知
         if (pkg == targetApp && notice.contains("成功")) {
-            // 写入打卡专用日志（文件名格式：checkin_log_202503.txt）
-            LogFileManager.writeCheckinLog("成功", "收到打卡成功通知：$notice")
+            // 写入打卡专用日志，带计划时间和实际执行时间
+            val planned = com.pengxh.daily.app.ui.MainActivity.lastPlannedTime.ifBlank { null }
+            val actual = com.pengxh.daily.app.ui.MainActivity.lastActualTime.ifBlank { null }
+            LogFileManager.writeCheckinLog(
+                "打卡成功",
+                "收到打卡成功通知：$notice",
+                plannedTime = planned,
+                actualTime = actual
+            )
             backToMainActivity()
             "即将发送通知邮件，请注意查收".show(this)
             emailManager.sendEmail(null, notice, false)

@@ -12,7 +12,12 @@ object Constant {
     const val BACK_TO_HOME_KEY = "BACK_TO_HOME_KEY"
     const val TASK_NAME_KEY = "TASK_KEY"
     const val RANDOM_TIME_KEY = "RANDOM_TIME_KEY"
+    // 旧版兼容键（单向随机），新版已拆分为前/后两个方向
     const val RANDOM_MINUTE_RANGE_KEY = "RANDOM_MINUTE_RANGE_KEY"
+    // 新版：往前最多提前几分钟（如 5 表示最早可提前 5 分钟）
+    const val RANDOM_BEFORE_MINUTES_KEY = "RANDOM_BEFORE_MINUTES_KEY"
+    // 新版：往后最多推迟几分钟（如 10 表示最晚可推迟 10 分钟）
+    const val RANDOM_AFTER_MINUTES_KEY = "RANDOM_AFTER_MINUTES_KEY"
     const val TASK_AUTO_START_KEY = "TASK_AUTO_START_KEY"
 
     const val DING_DING = "com.alibaba.android.rimet" // 钉钉

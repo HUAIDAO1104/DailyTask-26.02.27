@@ -7,6 +7,7 @@ import android.view.View
 import com.pengxh.daily.app.R
 import com.pengxh.daily.app.databinding.ActivityTaskConfigBinding
 import com.pengxh.daily.app.sqlite.DatabaseWrapper
+import com.pengxh.daily.app.utils.AppConfigManager
 import com.pengxh.daily.app.utils.BroadcastManager
 import com.pengxh.daily.app.utils.Constant
 import com.pengxh.daily.app.utils.MessageType
@@ -55,8 +56,11 @@ class TaskConfigActivity : KotlinBaseActivity<ActivityTaskConfigBinding>() {
         binding.randomTimeSwitch.isChecked = needRandom
         if (needRandom) {
             binding.minuteRangeLayout.visibility = View.VISIBLE
-            val value = SaveKeyValues.getValue(Constant.RANDOM_MINUTE_RANGE_KEY, 5) as Int
-            binding.minuteRangeView.text = "${value}分钟"
+            val legacyRange = SaveKeyValues.getValue(Constant.RANDOM_MINUTE_RANGE_KEY, 5) as Int
+            val beforeVal = SaveKeyValues.getValue(Constant.RANDOM_BEFORE_MINUTES_KEY, legacyRange) as Int
+            val afterVal = SaveKeyValues.getValue(Constant.RANDOM_AFTER_MINUTES_KEY, legacyRange * 2) as Int
+            binding.beforeMinutesView.text = "${beforeVal}分钟"
+            binding.afterMinutesView.text = "${afterVal}分钟"
         } else {
             binding.minuteRangeLayout.visibility = View.GONE
         }
@@ -109,31 +113,56 @@ class TaskConfigActivity : KotlinBaseActivity<ActivityTaskConfigBinding>() {
             SaveKeyValues.putValue(Constant.RANDOM_TIME_KEY, isChecked)
             if (isChecked) {
                 binding.minuteRangeLayout.visibility = View.VISIBLE
-                val value = SaveKeyValues.getValue(Constant.RANDOM_MINUTE_RANGE_KEY, 5) as Int
-                binding.minuteRangeView.text = "${value}分钟"
+                val legacyRange = SaveKeyValues.getValue(Constant.RANDOM_MINUTE_RANGE_KEY, 5) as Int
+                val beforeVal = SaveKeyValues.getValue(Constant.RANDOM_BEFORE_MINUTES_KEY, legacyRange) as Int
+                val afterVal = SaveKeyValues.getValue(Constant.RANDOM_AFTER_MINUTES_KEY, legacyRange * 2) as Int
+                binding.beforeMinutesView.text = "${beforeVal}分钟"
+                binding.afterMinutesView.text = "${afterVal}分钟"
             } else {
                 binding.minuteRangeLayout.visibility = View.GONE
             }
         }
 
-        binding.minuteRangeLayout.setOnClickListener {
+        binding.beforeMinutesLayout.setOnClickListener {
             AlertInputDialog.Builder()
                 .setContext(this)
-                .setTitle("设置随机时间范围")
-                .setHintMessage("请输入整数，如：30")
+                .setTitle("设置最多提前分钟数")
+                .setHintMessage("输入整数，如：5（表示最早可提前5分钟）")
                 .setNegativeButton("取消")
                 .setPositiveButton("确定")
                 .setOnDialogButtonClickListener(object :
                     AlertInputDialog.OnDialogButtonClickListener {
                     override fun onConfirmClick(value: String) {
                         if (value.isNumber()) {
-                            binding.minuteRangeView.text = "${value}分钟"
-                            SaveKeyValues.putValue(Constant.RANDOM_MINUTE_RANGE_KEY, value.toInt())
+                            val v = value.toInt()
+                            binding.beforeMinutesView.text = "${v}分钟"
+                            SaveKeyValues.putValue(Constant.RANDOM_BEFORE_MINUTES_KEY, v)
                         } else {
-                            "直接输入整数时间即可".show(context)
+                            "请直接输入整数".show(context)
                         }
                     }
+                    override fun onCancelClick() {}
+                }).build().show()
+        }
 
+        binding.afterMinutesLayout.setOnClickListener {
+            AlertInputDialog.Builder()
+                .setContext(this)
+                .setTitle("设置最多推迟分钟数")
+                .setHintMessage("输入整数，如：10（表示最晚可推迟10分钟）")
+                .setNegativeButton("取消")
+                .setPositiveButton("确定")
+                .setOnDialogButtonClickListener(object :
+                    AlertInputDialog.OnDialogButtonClickListener {
+                    override fun onConfirmClick(value: String) {
+                        if (value.isNumber()) {
+                            val v = value.toInt()
+                            binding.afterMinutesView.text = "${v}分钟"
+                            SaveKeyValues.putValue(Constant.RANDOM_AFTER_MINUTES_KEY, v)
+                        } else {
+                            "请直接输入整数".show(context)
+                        }
+                    }
                     override fun onCancelClick() {}
                 }).build().show()
         }
@@ -232,5 +261,11 @@ class TaskConfigActivity : KotlinBaseActivity<ActivityTaskConfigBinding>() {
         BroadcastManager.getDefault().sendBroadcast(
             this, MessageType.SET_DING_DING_OVERTIME.action, mapOf("time" to time)
         )
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // 每次离开配置页面时，将最新配置持久化到文件，确保升级后配置不丢失
+        AppConfigManager.save(this)
     }
 }
