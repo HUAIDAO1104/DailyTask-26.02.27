@@ -11,6 +11,7 @@ import com.pengxh.daily.app.sqlite.bean.NotificationBean
 import com.pengxh.daily.app.utils.BroadcastManager
 import com.pengxh.daily.app.utils.Constant
 import com.pengxh.daily.app.utils.EmailManager
+import com.pengxh.daily.app.utils.LogFileManager
 import com.pengxh.daily.app.utils.MessageType
 import com.pengxh.kt.lite.extensions.show
 import com.pengxh.kt.lite.extensions.timestampToCompleteDate
@@ -71,6 +72,8 @@ class NotificationMonitorService : NotificationListenerService() {
 
         // 目标应用打卡通知
         if (pkg == targetApp && notice.contains("成功")) {
+            // 写入打卡专用日志（文件名格式：checkin_log_202503.txt）
+            LogFileManager.writeCheckinLog("成功", "收到打卡成功通知：$notice")
             backToMainActivity()
             "即将发送通知邮件，请注意查收".show(this)
             emailManager.sendEmail(null, notice, false)

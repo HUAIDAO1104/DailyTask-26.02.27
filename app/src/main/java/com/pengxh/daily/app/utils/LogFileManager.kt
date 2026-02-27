@@ -8,6 +8,9 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.locks.ReentrantLock
 import java.util.stream.Collectors
 
@@ -16,13 +19,14 @@ object LogFileManager {
     private const val MAX_LOG_SIZE = 5 * 1024 * 1024 // 5MB
     private const val MAX_LOG_FILES = 5 // 最多保留5个日志文件
     private lateinit var currentLogFile: Path
+    private lateinit var logDir: Path          // 保存目录引用，供 writeCheckinLog 使用
     private val fileLock = ReentrantLock() // 防止并发写入冲突
 
     @Synchronized
     fun initLogFile(context: Context) {
         val documentDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
             ?: throw IllegalStateException("External storage directory not available")
-        val logDir = documentDir.toPath()
+        logDir = documentDir.toPath()
         currentLogFile = logDir.resolve("app_runtime_log.txt")
         try {
             if (!Files.exists(currentLogFile)) {
@@ -92,6 +96,38 @@ object LogFileManager {
             }
         } else {
             throw IllegalStateException("Log file not initialized. Call initLogFile first.")
+        }
+    }
+
+    /**
+     * 写入打卡专用日志，文件名格式：checkin_log_yyyyMM.txt（如 checkin_log_202503.txt）
+     * 每月自动新建一个文件，方便按月查阅打卡记录。
+     *
+     * @param result  打卡结果，例如："成功"、"超时-第1次重试"、"失败-已重试3次"
+     * @param detail  附加说明，例如通知原文或失败原因
+     */
+    @Synchronized
+    fun writeCheckinLog(result: String, detail: String) {
+        if (!::logDir.isInitialized) {
+            Log.w(kTag, "writeCheckinLog: logDir 未初始化，跳过写入")
+            return
+        }
+        fileLock.lock()
+        try {
+            // 按年月生成文件名，例如 checkin_log_202503.txt
+            val monthStr = SimpleDateFormat("yyyyMM", Locale.CHINA).format(Date())
+            val checkinFile = logDir.resolve("checkin_log_$monthStr.txt")
+            if (!Files.exists(checkinFile)) {
+                Files.createFile(checkinFile)
+            }
+            val time = System.currentTimeMillis().timestampToCompleteDate()
+            val line = "[$time] [$result] $detail${System.lineSeparator()}"
+            Log.d(kTag, "打卡日志: $line")
+            Files.write(checkinFile, line.toByteArray(), StandardOpenOption.APPEND)
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            fileLock.unlock()
         }
     }
 }

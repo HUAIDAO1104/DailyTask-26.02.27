@@ -80,6 +80,18 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
 
     private val kTag = "MainActivity"
     private val context = this
+
+    // ── 打卡超时重试相关 ──────────────────────────────────────────────────
+    // 最大重试次数：首次超时 + 最多再重试 3 次 = 共 4 次尝试机会
+    private val MAX_RETRY_COUNT = 3
+    // 两次重试之间等待的秒数（30 秒后再次拉起钉钉）
+    private val RETRY_INTERVAL_SECONDS = 30L
+    // 当前已重试次数（每次 startFloatViewTimer 被调用时归零）
+    private var retryCount = 0
+    // 重试等待计时器（超时后倒计时 30 秒再重试）
+    private var retryWaitTimer: CountDownTimer? = null
+    // ─────────────────────────────────────────────────────────────────────
+
     private val actions by lazy {
         listOf(
             MessageType.SHOW_MASK_VIEW.action,
@@ -160,6 +172,9 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
                     MessageType.CANCEL_COUNT_DOWN_TIMER -> {
                         timeoutTimer?.cancel()
                         timeoutTimer = null
+                        retryWaitTimer?.cancel()
+                        retryWaitTimer = null
+                        retryCount = 0
 
                         LogFileManager.writeLog("取消超时定时器，执行下一个任务")
                         mainHandler.post(dailyTaskRunnable)
@@ -326,13 +341,28 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun startFloatViewTimer(event: FloatViewTimerEvent) {
+        // 每次收到打卡事件，重置重试计数器，取消上一次可能残留的重试等待计时器
+        retryCount = 0
+        retryWaitTimer?.cancel()
+        retryWaitTimer = null
+        startCheckinTimeoutTimer()
+    }
+
+    /**
+     * 启动打卡超时计时器。
+     * 倒计时结束时若未收到打卡成功通知，则判定本次超时：
+     *   - 若重试次数未达上限，等待 RETRY_INTERVAL_SECONDS 秒后重新拉起目标 App 再试；
+     *   - 若已达到 MAX_RETRY_COUNT 次，判定彻底失败，发送邮件通知。
+     */
+    private fun startCheckinTimeoutTimer() {
         val time = SaveKeyValues.getValue(
             Constant.STAY_DD_TIMEOUT_KEY, Constant.DEFAULT_OVER_TIME
         ) as Int
+
+        timeoutTimer?.cancel()
         timeoutTimer = object : CountDownTimer(time * 1000L, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 val tick = millisUntilFinished / 1000
-                // 更新悬浮窗倒计时
                 BroadcastManager.getDefault().sendBroadcast(
                     context,
                     MessageType.UPDATE_FLOATING_WINDOW_TIME.action,
@@ -341,11 +371,36 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
             }
 
             override fun onFinish() {
-                //如果倒计时结束，那么表明没有收到打卡成功的通知
+                // 超时：先回到主界面，停止在钉钉里等待
                 backToMainActivity()
 
-                LogFileManager.writeLog("未收到打卡成功通知，发送异常日志邮件")
-                emailManager.sendEmail(null, "", false)
+                if (retryCount < MAX_RETRY_COUNT) {
+                    retryCount++
+                    val msg = "打卡超时（第 $retryCount 次），${RETRY_INTERVAL_SECONDS} 秒后自动重试..."
+                    LogFileManager.writeLog(msg)
+                    LogFileManager.writeCheckinLog("超时-第${retryCount}次重试等待", msg)
+
+                    // 等待 RETRY_INTERVAL_SECONDS 秒后重新拉起目标 App
+                    retryWaitTimer?.cancel()
+                    retryWaitTimer = object : CountDownTimer(RETRY_INTERVAL_SECONDS * 1000L, 1000L) {
+                        override fun onTick(millisUntilFinished: Long) {}
+                        override fun onFinish() {
+                            val retryMsg = "开始第 $retryCount 次重试打卡"
+                            LogFileManager.writeLog(retryMsg)
+                            LogFileManager.writeCheckinLog("超时-第${retryCount}次重试启动", retryMsg)
+                            // 重新拉起目标 App，并重新开始超时倒计时
+                            openApplication(true)
+                            startCheckinTimeoutTimer()
+                        }
+                    }
+                    retryWaitTimer?.start()
+                } else {
+                    // 已达到最大重试次数，彻底失败
+                    val failMsg = "打卡失败：已超时重试 $MAX_RETRY_COUNT 次，均未收到打卡成功通知"
+                    LogFileManager.writeLog(failMsg)
+                    LogFileManager.writeCheckinLog("失败-已重试${MAX_RETRY_COUNT}次", failMsg)
+                    emailManager.sendEmail("打卡失败通知", failMsg, false)
+                }
             }
         }
         timeoutTimer?.start()
@@ -561,9 +616,12 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
         // 取消任务调度
         mainHandler.removeCallbacks(dailyTaskRunnable)
 
-        // 取消定时器
+        // 取消打卡超时计时器及重试等待计时器，并重置重试计数
         timeoutTimer?.cancel()
         timeoutTimer = null
+        retryWaitTimer?.cancel()
+        retryWaitTimer = null
+        retryCount = 0
 
         // 取消服务中的倒计时
         countDownTimerService?.cancelCountDown()
@@ -779,6 +837,8 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
         actions.forEach {
             BroadcastManager.getDefault().unregisterReceiver(this, it)
         }
+        retryWaitTimer?.cancel()
+        retryWaitTimer = null
         EventBus.getDefault().unregister(this)
     }
 }
