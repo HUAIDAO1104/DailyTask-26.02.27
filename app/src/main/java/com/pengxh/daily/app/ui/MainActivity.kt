@@ -389,7 +389,7 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
                             LogFileManager.writeLog(retryMsg)
                             LogFileManager.writeCheckinLog("超时-第${retryCount}次重试启动", retryMsg)
                             // 重新拉起目标 App，并重新开始超时倒计时
-                            openApplication(true)
+                            this@MainActivity.openApplication(true)
                             startCheckinTimeoutTimer()
                         }
                     }
