@@ -5,6 +5,14 @@ plugins {
     id('org.jetbrains.kotlin.android')
 }
 
+// 读取项目根目录下的 keystore.properties 签名配置文件
+// 此文件已加入 .gitignore，不会提交到 Git 仓库
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace 'com.pengxh.daily.app'
     compileSdk 36
@@ -21,10 +29,11 @@ android {
 
     signingConfigs {
         release {
-            storeFile file('DailyTask.jks')
-            storePassword '123456789'
-            keyAlias 'key0'
-            keyPassword '123456789'
+            // 从 keystore.properties 读取，不在此处硬编码任何密码
+            storeFile     keystoreProperties['STORE_FILE']     ? rootProject.file(keystoreProperties['STORE_FILE'])     : null
+            storePassword keystoreProperties['STORE_PASSWORD'] ?: ''
+            keyAlias      keystoreProperties['KEY_ALIAS']      ?: ''
+            keyPassword   keystoreProperties['KEY_PASSWORD']   ?: ''
         }
     }
 

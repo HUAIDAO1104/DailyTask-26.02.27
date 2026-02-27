@@ -16,9 +16,13 @@ import com.pengxh.daily.app.extensions.formatTime
 import com.pengxh.daily.app.utils.BroadcastManager
 import com.pengxh.daily.app.utils.Constant
 import com.pengxh.daily.app.utils.EmailManager
+import com.pengxh.daily.app.utils.HolidayChecker
 import com.pengxh.daily.app.utils.LogFileManager
 import com.pengxh.daily.app.utils.MessageType
 import com.pengxh.kt.lite.utils.SaveKeyValues
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Locale
 
@@ -70,20 +74,35 @@ class ForegroundRunningService : Service() {
 
     private fun resetTask() {
         if (!isTaskReset) {
-            var message: String
-            if (SaveKeyValues.getValue(Constant.TASK_AUTO_START_KEY, true) as Boolean) {
-                BroadcastManager.getDefault().sendBroadcast(
-                    this, MessageType.RESET_DAILY_TASK.action
-                )
-                message = "到达任务计划时间，重置每日任务。"
-            } else {
-                message = "每日任务已手动停止，不再自动重置！如需恢复，可通过远程消息发送【】指令。"
-            }
-            LogFileManager.writeLog(message)
-            emailManager.sendEmail("循环任务状态通知", message, false)
             isTaskReset = true
 
-            // 重置任务计时器
+            // 在子线程中查询节假日，避免阻塞主线程
+            CoroutineScope(Dispatchers.IO).launch {
+                val (shouldWork, holidayReason) = HolidayChecker.shouldWorkToday()
+                LogFileManager.writeLog("每日任务重置时节假日检查：$holidayReason")
+
+                var message: String
+                if (!shouldWork) {
+                    // 今天是休息日（周末或法定节假日），不启动打卡任务
+                    message = "$holidayReason，今日不执行打卡任务。"
+                    LogFileManager.writeLog(message)
+                    emailManager.sendEmail("循环任务状态通知", message, false)
+                } else if (SaveKeyValues.getValue(Constant.TASK_AUTO_START_KEY, true) as Boolean) {
+                    // 今天是工作日，且设置了自动启动，重置并执行任务
+                    BroadcastManager.getDefault().sendBroadcast(
+                        this@ForegroundRunningService, MessageType.RESET_DAILY_TASK.action
+                    )
+                    message = "到达任务计划时间，重置每日任务。$holidayReason"
+                    LogFileManager.writeLog(message)
+                    emailManager.sendEmail("循环任务状态通知", message, false)
+                } else {
+                    message = "每日任务已手动停止，不再自动重置！如需恢复，可通过远程消息发送【开始循环】指令。"
+                    LogFileManager.writeLog(message)
+                    emailManager.sendEmail("循环任务状态通知", message, false)
+                }
+            }
+
+            // 重置任务计时器（等待下一天）
             val hour = SaveKeyValues.getValue(
                 Constant.RESET_TIME_KEY, Constant.DEFAULT_RESET_HOUR
             ) as Int
