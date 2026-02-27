@@ -32,6 +32,15 @@ object HolidayChecker {
     private const val TYPE_TRANSFER = 3   // 调休补班（需要上班）
 
     /**
+     * 当天查询结果缓存。
+     * key = 日期字符串（yyyy-MM-dd），value = 查询结果 Pair
+     * 同一天内多次调用直接返回缓存，不重复请求网络。
+     * App 进程重启时缓存自动清空，无需手动管理。
+     */
+    private var cachedDate: String = ""
+    private var cachedResult: Pair<Boolean, String>? = null
+
+    /**
      * 检查今天是否需要打卡（同步，需在子线程调用）
      *
      * @return Pair<Boolean, String>
@@ -40,12 +49,24 @@ object HolidayChecker {
      */
     fun shouldWorkToday(): Pair<Boolean, String> {
         val today = getTodayString()
+
+        // 命中当天缓存，直接返回，不重复请求网络
+        if (today == cachedDate && cachedResult != null) {
+            Log.d(kTag, "命中当天缓存（$today），直接返回：${cachedResult!!.second}")
+            return cachedResult!!
+        }
+
         return try {
             val result = queryHolidayApi(today)
-            parseResult(result, today)
+            val parsed = parseResult(result, today)
+            // 写入缓存
+            cachedDate = today
+            cachedResult = parsed
+            parsed
         } catch (e: Exception) {
             Log.w(kTag, "节假日 API 请求失败，降级为正常工作日处理: ${e.message}")
             Pair(true, "节假日 API 请求失败（${e.javaClass.simpleName}），默认按工作日处理，正常打卡")
+            // 注意：失败时不写缓存，下次到点时可以重试
         }
     }
 

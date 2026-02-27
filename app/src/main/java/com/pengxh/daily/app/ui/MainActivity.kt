@@ -124,6 +124,8 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
 
                     MessageType.RESET_DAILY_TASK -> {
                         Log.d(kTag, "onReceive: 重置每日任务")
+                        // 每天重置时，清空休息日邮件发送标志，为新的一天做准备
+                        countDownTimerService?.resetDailyState()
                         startExecuteTask()
                     }
 
