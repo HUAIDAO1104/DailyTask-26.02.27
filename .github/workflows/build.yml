@@ -1,0 +1,105 @@
+name: 自动编译 Release APK
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: 编译 & 签名 Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 拉取代码
+        uses: actions/checkout@v4
+
+      - name: ☕ 配置 JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: 🔑 赋予 gradlew 执行权限
+        run: chmod +x gradlew
+
+      - name: 🔐 还原签名文件 (release.jks)
+        run: |
+          echo "${{ secrets.KEYSTORE_FILE }}" | base64 --decode > release.jks
+          echo "✅ release.jks 已还原，大小：$(wc -c < release.jks) bytes"
+
+      - name: 📝 生成 keystore.properties
+        run: |
+          cat > keystore.properties << EOF
+          STORE_FILE=../release.jks
+          STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS=${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
+          EOF
+          echo "✅ keystore.properties 已生成"
+
+      - name: 📦 缓存 Gradle 依赖
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: 🔨 编译 Release APK
+        run: ./gradlew assembleDailyRelease --no-daemon --stacktrace
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false"
+
+      - name: 🔍 查找 APK 文件
+        id: find_apk
+        run: |
+          APK_PATH=$(find app/build/outputs/apk -name "*.apk" | head -1)
+          if [ -z "$APK_PATH" ]; then
+            echo "❌ 未找到 APK 文件，构建可能失败"
+            exit 1
+          fi
+          APK_NAME=$(basename "$APK_PATH")
+          echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
+          echo "apk_name=$APK_NAME" >> $GITHUB_OUTPUT
+          echo "✅ 找到 APK：$APK_PATH"
+
+      - name: 📤 上传 APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DailyTask-Release-APK-${{ github.run_number }}
+          path: app/build/outputs/apk/**/*.apk
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: ✅ 编译成功通知
+        if: success()
+        run: |
+          echo "=============================================="
+          echo "  🎉 APK 编译成功！"
+          echo "  📦 文件名：${{ steps.find_apk.outputs.apk_name }}"
+          echo "  🔢 构建编号：#${{ github.run_number }}"
+          echo "  📥 下载地址：前往 Actions → 本次运行 → Artifacts"
+          echo "  ⏳ Artifact 保留 7 天，请及时下载"
+          echo "=============================================="
+
+      - name: ❌ 编译失败诊断
+        if: failure()
+        run: |
+          echo "=============================================="
+          echo "  ❌ APK 编译失败！"
+          echo "  🔎 请检查以下常见原因："
+          echo "  1. GitHub Secrets 是否已配置："
+          echo "     KEYSTORE_FILE / KEYSTORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD"
+          echo "  2. KEYSTORE_FILE 是否为 release.jks 的 Base64 内容"
+          echo "  3. 代码本身是否存在编译错误（查看上方日志）"
+          echo "  4. 依赖下载是否超时（网络问题，重新运行即可）"
+          echo "=============================================="
+          find . -name "*.log" -path "*/build/*" | head -5 | while read f; do
+            echo "--- 日志文件：$f ---"
+            tail -50 "$f" 2>/dev/null || true
+          done
