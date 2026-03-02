@@ -82,11 +82,38 @@ fun Context.openApplication(needCountDown: Boolean) {
     }
 }
 
+/**
+ * 回到主界面并推进到下一个任务。
+ * 仅在打卡成功后调用，会发送 CANCEL_COUNT_DOWN_TIMER 广播触发任务链推进。
+ */
 fun Context.backToMainActivity() {
     BroadcastManager.getDefault().sendBroadcast(this, MessageType.CANCEL_COUNT_DOWN_TIMER.action)
     val backToHome = SaveKeyValues.getValue(Constant.BACK_TO_HOME_KEY, false) as Boolean
     if (backToHome) {
         //模拟点击Home键
+        val home = Intent(Intent.ACTION_MAIN).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP
+            addCategory(Intent.CATEGORY_HOME)
+        }
+        startActivity(home)
+        Handler(Looper.getMainLooper()).postDelayed({
+            launchMainActivity()
+        }, 2000)
+    } else {
+        launchMainActivity()
+    }
+}
+
+/**
+ * 仅回到主界面，不推进任务链。
+ * 在打卡超时/重试等场景调用，保留重试逻辑，不触发 dailyTaskRunnable。
+ */
+fun Context.backToMainActivityOnly() {
+    BroadcastManager.getDefault().sendBroadcast(this, MessageType.BACK_TO_MAIN_ONLY.action)
+    val backToHome = SaveKeyValues.getValue(Constant.BACK_TO_HOME_KEY, false) as Boolean
+    if (backToHome) {
         val home = Intent(Intent.ACTION_MAIN).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
