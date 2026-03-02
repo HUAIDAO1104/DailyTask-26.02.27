@@ -37,6 +37,7 @@ import com.pengxh.daily.app.adapter.DailyTaskAdapter
 import com.pengxh.daily.app.databinding.ActivityMainBinding
 import com.pengxh.daily.app.event.FloatViewTimerEvent
 import com.pengxh.daily.app.extensions.backToMainActivity
+import com.pengxh.daily.app.extensions.backToMainActivityOnly
 import com.pengxh.daily.app.extensions.convertToTimeEntity
 import com.pengxh.daily.app.extensions.openApplication
 import com.pengxh.daily.app.extensions.diffCurrent
@@ -112,7 +113,8 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
             MessageType.UPDATE_RESET_TICK_TIME.action,
             MessageType.START_DAILY_TASK.action,
             MessageType.STOP_DAILY_TASK.action,
-            MessageType.CANCEL_COUNT_DOWN_TIMER.action
+            MessageType.CANCEL_COUNT_DOWN_TIMER.action,
+            MessageType.BACK_TO_MAIN_ONLY.action
         )
     }
 
@@ -190,6 +192,12 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
 
                         LogFileManager.writeLog("取消超时定时器，执行下一个任务")
                         mainHandler.post(dailyTaskRunnable)
+                    }
+
+                    MessageType.BACK_TO_MAIN_ONLY -> {
+                        // 仅回到主界面，不推进任务链（超时重试场景使用）
+                        // 重试逻辑由 startCheckinTimeoutTimer() 自己管理，这里什么都不做
+                        LogFileManager.writeLog("回到主界面（超时重试），保持重试逻辑继续运行")
                     }
 
                     else -> {}
@@ -383,8 +391,8 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
             }
 
             override fun onFinish() {
-                // 超时：先回到主界面，停止在钉钉里等待
-                backToMainActivity()
+                // 超时：只回到主界面，不推进任务链，保留重试逻辑
+                backToMainActivityOnly()
 
                 if (retryCount < MAX_RETRY_COUNT) {
                     retryCount++

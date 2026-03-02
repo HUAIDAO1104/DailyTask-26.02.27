@@ -44,9 +44,14 @@ enum class MessageType(val action: String) {
     STOP_DAILY_TASK("com.pengxh.daily.app.BROADCAST_STOP_DAILY_TASK_ACTION"),
 
     /**
-     * - 取消倒计时
+     * - 取消倒计时（打卡成功后调用，同时推进到下一个任务）
      * */
     CANCEL_COUNT_DOWN_TIMER("com.pengxh.daily.app.BROADCAST_CANCEL_COUNT_DOWN_TIMER_ACTION"),
+
+    /**
+     * - 仅回到主界面（超时重试时调用，不推进任务，保留重试逻辑）
+     * */
+    BACK_TO_MAIN_ONLY("com.pengxh.daily.app.BROADCAST_BACK_TO_MAIN_ONLY_ACTION"),
 
     /**
      * - 更新悬浮窗倒计时
