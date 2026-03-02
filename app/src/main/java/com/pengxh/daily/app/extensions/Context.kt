@@ -99,18 +99,19 @@ fun Context.backToMainActivity() {
         }
         startActivity(home)
         Handler(Looper.getMainLooper()).postDelayed({
-            launchMainActivity()
+            launchMainActivity(autoMask = false)
         }, 2000)
     } else {
-        launchMainActivity()
+        launchMainActivity(autoMask = false)
     }
 }
 
 /**
  * 仅回到主界面，不推进任务链。
  * 在打卡超时/重试等场景调用，保留重试逻辑，不触发 dailyTaskRunnable。
+ * autoMask=true 时回到主界面后自动显示假息屏（打卡成功场景使用）。
  */
-fun Context.backToMainActivityOnly() {
+fun Context.backToMainActivityOnly(autoMask: Boolean = false) {
     BroadcastManager.getDefault().sendBroadcast(this, MessageType.BACK_TO_MAIN_ONLY.action)
     val backToHome = SaveKeyValues.getValue(Constant.BACK_TO_HOME_KEY, false) as Boolean
     if (backToHome) {
@@ -122,16 +123,17 @@ fun Context.backToMainActivityOnly() {
         }
         startActivity(home)
         Handler(Looper.getMainLooper()).postDelayed({
-            launchMainActivity()
+            launchMainActivity(autoMask = autoMask)
         }, 2000)
     } else {
-        launchMainActivity()
+        launchMainActivity(autoMask = autoMask)
     }
 }
 
-private fun Context.launchMainActivity() {
+private fun Context.launchMainActivity(autoMask: Boolean = false) {
     val intent = Intent(this, MainActivity::class.java).apply {
         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        putExtra("autoMask", autoMask)
     }
     startActivity(intent)
 }

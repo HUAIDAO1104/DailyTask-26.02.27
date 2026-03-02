@@ -86,8 +86,8 @@ class NotificationMonitorService : NotificationListenerService() {
             BroadcastManager.getDefault().sendBroadcast(
                 this, MessageType.CHECKIN_SUCCESS.action
             )
-            // 回到主界面（只做界面切换，不推进任务）
-            backToMainActivityOnly()
+            // 回到主界面并自动恢复假息屏（autoMask=true）
+            backToMainActivityOnly(autoMask = true)
             "即将发送通知邮件，请注意查收".show(this)
             emailManager.sendEmail(null, notice, false)
         }

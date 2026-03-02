@@ -374,6 +374,12 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
                     }
                 }).build().show()
         }
+
+        // 打卡成功后回到主界面时自动恢复假息屏
+        if (intent?.getBooleanExtra("autoMask", false) == true) {
+            // 延迟 300ms 等待界面完全渲染后再显示蒙层
+            mainHandler.postDelayed({ showMaskView() }, 300)
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
