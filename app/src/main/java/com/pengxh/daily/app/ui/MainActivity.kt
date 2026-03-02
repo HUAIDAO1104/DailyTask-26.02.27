@@ -99,6 +99,10 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
     private var currentActualTime: String = ""    // 实际执行时间（加偏移），如 "08:57:32"
     // ─────────────────────────────────────────────────────────────────────
 
+    // ── 当前正在执行的任务索引（打卡成功后用于直接推进到 index+1）──────────
+    private var currentTaskIndex: Int = -1
+    // ─────────────────────────────────────────────────────────────────────
+
     companion object {
         /** 供 NotificationMonitorService 读取当前任务的计划/实际打卡时间 */
         @Volatile var lastPlannedTime: String = ""
@@ -114,7 +118,8 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
             MessageType.START_DAILY_TASK.action,
             MessageType.STOP_DAILY_TASK.action,
             MessageType.CANCEL_COUNT_DOWN_TIMER.action,
-            MessageType.BACK_TO_MAIN_ONLY.action
+            MessageType.BACK_TO_MAIN_ONLY.action,
+            MessageType.CHECKIN_SUCCESS.action
         )
     }
 
@@ -198,6 +203,18 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
                         // 仅回到主界面，不推进任务链（超时重试场景使用）
                         // 重试逻辑由 startCheckinTimeoutTimer() 自己管理，这里什么都不做
                         LogFileManager.writeLog("回到主界面（超时重试），保持重试逻辑继续运行")
+                    }
+
+                    MessageType.CHECKIN_SUCCESS -> {
+                        // 打卡成功：取消所有计时器，直接推进到下一个任务
+                        // 不走 getTaskIndex()，避免在打卡时间窗口内重复安排同一任务
+                        timeoutTimer?.cancel()
+                        timeoutTimer = null
+                        retryWaitTimer?.cancel()
+                        retryWaitTimer = null
+                        retryCount = 0
+                        LogFileManager.writeLog("打卡成功，直接推进到下一个任务（当前index=$currentTaskIndex）")
+                        advanceToNextTask()
                     }
 
                     else -> {}
@@ -619,6 +636,7 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
 
                 LogFileManager.writeLog("执行任务，任务index是: $index，时间是: ${taskBeans[index].time}")
                 val task = taskBeans[index]
+                currentTaskIndex = index  // 记录当前任务索引，供打卡成功后直接推进
                 val taskIndex = index + 1
                 binding.tipsView.text = String.format(
                     Locale.getDefault(), "准备执行第 %d 个任务", taskIndex
@@ -679,6 +697,7 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
         dailyTaskAdapter.updateCurrentTaskState(-1)
         binding.tipsView.text = ""
         isTaskStarted = false
+        currentTaskIndex = -1
 
         // 重置按钮状态
         binding.executeTaskButton.setIconResource(R.mipmap.ic_start)
@@ -687,6 +706,70 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
 
         // 发送通知
         emailManager.sendEmail("停止任务通知", "任务停止成功，请及时打开下次任务", false)
+    }
+
+    /**
+     * 打卡成功后直接推进到下一个任务。
+     * 使用 currentTaskIndex+1 直接定位下一任务，不经过 getTaskIndex() 时间比较，
+     * 避免在打卡时间窗口内重复安排同一任务。
+     */
+    private fun advanceToNextTask() {
+        val nextIndex = currentTaskIndex + 1
+        LogFileManager.writeLog("advanceToNextTask: 当前index=$currentTaskIndex，尝试执行下一个index=$nextIndex")
+
+        if (nextIndex >= taskBeans.size) {
+            // 没有更多任务，今日全部完成
+            LogFileManager.writeLog("今日任务已全部执行完毕（打卡成功后推进）")
+            mainHandler.removeCallbacks(dailyTaskRunnable)
+
+            binding.tipsView.text = "当天所有任务已执行完毕"
+            binding.tipsView.setTextColor(R.color.ios_green.convertColor(context))
+
+            dailyTaskAdapter.updateCurrentTaskState(-1)
+            countDownTimerService?.updateDailyTaskState()
+
+            emailManager.sendEmail("任务状态通知", "今日任务已全部执行完毕", false)
+            return
+        }
+
+        // 有下一个任务，直接安排
+        try {
+            val task = taskBeans[nextIndex]
+            currentTaskIndex = nextIndex
+            val taskIndex = nextIndex + 1
+
+            binding.tipsView.text = String.format(
+                Locale.getDefault(), "准备执行第 %d 个任务", taskIndex
+            )
+            binding.tipsView.setTextColor(R.color.theme_color.convertColor(context))
+
+            val triple = task.diffCurrent()
+            currentPlannedTime = triple.first
+            currentActualTime = triple.second
+            val diff = triple.third
+
+            lastPlannedTime = currentPlannedTime
+            lastActualTime = currentActualTime
+
+            dailyTaskAdapter.updateCurrentTaskState(nextIndex, currentActualTime)
+
+            val delayNote = if (diff <= 0) "（时间已过，立即执行）" else "（${diff}秒后执行）"
+            val logMsg = "第 $taskIndex 个任务：计划 $currentPlannedTime → 实际 $currentActualTime $delayNote"
+            LogFileManager.writeLog(logMsg)
+            LogFileManager.writeCheckinLog(
+                "待执行", logMsg,
+                plannedTime = currentPlannedTime,
+                actualTime = currentActualTime
+            )
+            emailManager.sendEmail(
+                "任务执行通知",
+                "准备执行第 $taskIndex 个任务，计划时间：$currentPlannedTime，实际时间: $currentActualTime$delayNote",
+                false
+            )
+            countDownTimerService?.startCountDown(taskIndex, maxOf(diff, 0))
+        } catch (e: Exception) {
+            LogFileManager.writeLog("advanceToNextTask 异常: ${e.message}")
+        }
     }
 
     private val itemComparator = object : NormalRecyclerAdapter.ItemComparator<DailyTaskBean> {

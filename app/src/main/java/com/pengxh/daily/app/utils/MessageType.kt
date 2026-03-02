@@ -54,6 +54,11 @@ enum class MessageType(val action: String) {
     BACK_TO_MAIN_ONLY("com.pengxh.daily.app.BROADCAST_BACK_TO_MAIN_ONLY_ACTION"),
 
     /**
+     * - 打卡成功（直接推进到下一个任务，不重新走 getTaskIndex 时间比较）
+     * */
+    CHECKIN_SUCCESS("com.pengxh.daily.app.BROADCAST_CHECKIN_SUCCESS_ACTION"),
+
+    /**
      * - 更新悬浮窗倒计时
      * */
     UPDATE_FLOATING_WINDOW_TIME("com.pengxh.daily.app.BROADCAST_UPDATE_FLOATING_WINDOW_TIME_ACTION");

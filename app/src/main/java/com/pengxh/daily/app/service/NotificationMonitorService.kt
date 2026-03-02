@@ -4,7 +4,7 @@ import android.app.Notification
 import android.os.BatteryManager
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import com.pengxh.daily.app.extensions.backToMainActivity
+import com.pengxh.daily.app.extensions.backToMainActivityOnly
 import com.pengxh.daily.app.extensions.openApplication
 import com.pengxh.daily.app.sqlite.DatabaseWrapper
 import com.pengxh.daily.app.sqlite.bean.NotificationBean
@@ -81,7 +81,13 @@ class NotificationMonitorService : NotificationListenerService() {
                 plannedTime = planned,
                 actualTime = actual
             )
-            backToMainActivity()
+            // 发送打卡成功广播，MainActivity 会取消计时器并直接推进到下一任务
+            // 不再调用 backToMainActivity()（会发 CANCEL_COUNT_DOWN_TIMER，导致任务重复安排）
+            BroadcastManager.getDefault().sendBroadcast(
+                this, MessageType.CHECKIN_SUCCESS.action
+            )
+            // 回到主界面（只做界面切换，不推进任务）
+            backToMainActivityOnly()
             "即将发送通知邮件，请注意查收".show(this)
             emailManager.sendEmail(null, notice, false)
         }
