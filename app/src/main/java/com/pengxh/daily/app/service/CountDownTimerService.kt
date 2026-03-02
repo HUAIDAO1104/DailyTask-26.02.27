@@ -18,6 +18,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.net.HttpURLConnection
+import java.net.URL
 
 /**
  * APP倒计时服务，解决手机灭屏后倒计时会出现延迟的问题
@@ -96,8 +98,8 @@ class CountDownTimerService : Service() {
 
                     withContext(Dispatchers.Main) {
                         if (shouldWork) {
-                            // 工作日或调休补班，正常打卡
-                            openApplication(true)
+                            // 工作日或调休补班：先预热网络，再打开目标应用
+                            warmUpNetworkThenOpen()
                         } else {
                             // 周末或法定节假日：直接停住，什么都不做
                             // 【修复】不再发送 CANCEL_COUNT_DOWN_TIMER 广播。
@@ -124,6 +126,30 @@ class CountDownTimerService : Service() {
             start()
         }
         isTimerRunning = true
+    }
+
+    /**
+     * 打卡前先预热网络（发一次轻量级 HTTP 请求唤醒 Wi-Fi），
+     * 最多等待 2 秒，之后无论网络是否就绪都继续拉起目标 App。
+     */
+    private fun warmUpNetworkThenOpen() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val conn = URL("https://www.baidu.com").openConnection() as HttpURLConnection
+                conn.connectTimeout = 2000
+                conn.readTimeout = 2000
+                conn.requestMethod = "HEAD"
+                conn.connect()
+                val code = conn.responseCode
+                conn.disconnect()
+                LogFileManager.writeLog("网络预热完成，响应码：$code")
+            } catch (e: Exception) {
+                LogFileManager.writeLog("网络预热超时或失败（${e.message}），继续执行打卡")
+            }
+            withContext(Dispatchers.Main) {
+                openApplication(true)
+            }
+        }
     }
 
     fun updateDailyTaskState() {
