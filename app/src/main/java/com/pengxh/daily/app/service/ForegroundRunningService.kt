@@ -201,6 +201,19 @@ class ForegroundRunningService : Service() {
         return delta.toInt()
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // START_STICKY 确保服务被系统杀死后自动重启
+        return START_STICKY
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        // 用户从最近任务列表划掉 App 时，重新拉起前台服务以保活
+        super.onTaskRemoved(rootIntent)
+        LogFileManager.writeLog("ForegroundRunningService: 检测到任务被移除，重新拉起服务")
+        val restartIntent = Intent(applicationContext, ForegroundRunningService::class.java)
+        startForegroundService(restartIntent)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         BroadcastManager.getDefault().unregisterReceiver(
