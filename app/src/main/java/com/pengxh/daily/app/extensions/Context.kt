@@ -107,27 +107,25 @@ fun Context.backToMainActivity() {
 }
 
 /**
- * 仅回到主界面，不推进任务链。
- * 在打卡超时/重试等场景调用，保留重试逻辑，不触发 dailyTaskRunnable。
- * autoMask=true 时回到主界面后自动显示假息屏（打卡成功场景使用）。
+ * 超时/重试场景：仅退出钉钉回到后台，绝对不重建 MainActivity。
+ *
+ * 重建 MainActivity（FLAG_CLEAR_TASK）会销毁旧实例，导致：
+ *   - retryCount 归零
+ *   - retryWaitTimer 所在的旧实例被销毁，重试永远不会触发
+ *   - CountDownTimerService 的 bind 断开，倒计时被取消
+ * 因此超时时只需要按 Home 键退出钉钉，让 MainActivity 原地等待重试即可。
+ *
+ * @param autoMask 保留参数（超时场景传 false，打卡成功场景不走此函数）
  */
 fun Context.backToMainActivityOnly(autoMask: Boolean = false) {
+    // 只通知 MainActivity 记日志，不做任何界面切换
     BroadcastManager.getDefault().sendBroadcast(this, MessageType.BACK_TO_MAIN_ONLY.action)
-    val backToHome = SaveKeyValues.getValue(Constant.BACK_TO_HOME_KEY, false) as Boolean
-    if (backToHome) {
-        val home = Intent(Intent.ACTION_MAIN).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                    Intent.FLAG_ACTIVITY_SINGLE_TOP
-            addCategory(Intent.CATEGORY_HOME)
-        }
-        startActivity(home)
-        Handler(Looper.getMainLooper()).postDelayed({
-            launchMainActivity(autoMask = autoMask)
-        }, 2000)
-    } else {
-        launchMainActivity(autoMask = autoMask)
+    // 按 Home 键把钉钉退到后台，让 MainActivity 保持原实例继续运行
+    val home = Intent(Intent.ACTION_MAIN).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        addCategory(Intent.CATEGORY_HOME)
     }
+    startActivity(home)
 }
 
 private fun Context.launchMainActivity(autoMask: Boolean = false) {
