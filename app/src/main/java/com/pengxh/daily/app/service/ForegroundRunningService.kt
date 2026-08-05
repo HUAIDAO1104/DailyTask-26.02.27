@@ -13,7 +13,6 @@ import android.os.CountDownTimer
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.pengxh.daily.app.R
-import com.pengxh.daily.app.extensions.formatTime
 import com.pengxh.daily.app.utils.BroadcastManager
 import com.pengxh.daily.app.utils.Constant
 import com.pengxh.daily.app.utils.EmailManager
@@ -209,7 +208,8 @@ class ForegroundRunningService : Service() {
             override fun onTick(millisUntilFinished: Long) {
                 val seconds = (millisUntilFinished / 1000).toInt()
                 val message = String.format(
-                    Locale.getDefault(), "%s后刷新每日任务", seconds.formatTime()
+                    Locale.getDefault(), "%02d:%02d:%02d 后刷新",
+                    seconds / 3600, (seconds % 3600) / 60, seconds % 60
                 )
                 BroadcastManager.getDefault().sendBroadcast(
                     this@ForegroundRunningService,

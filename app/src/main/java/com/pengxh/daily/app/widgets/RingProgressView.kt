@@ -8,6 +8,7 @@ import android.graphics.RectF
 import android.graphics.Typeface
 import android.util.AttributeSet
 import android.view.View
+import com.pengxh.daily.app.R
 
 /**
  * 仪表盘圆形进度环。
@@ -30,7 +31,7 @@ class RingProgressView @JvmOverloads constructor(
     private val progressPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
         strokeWidth = 10f.dp()
-        color = Color.parseColor("#0A84FF")
+        color = context.getColor(R.color.theme_color)
         strokeCap = Paint.Cap.ROUND
     }
 

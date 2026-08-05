@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- ===== 品牌/强调色（iOS 深色模式系统色） ===== -->
-    <color name="theme_color">#0A84FF</color>
-    <color name="accent_blue">#0A84FF</color>
+    <!-- ===== 品牌/强调色（主题：克莱因蓝 International Klein Blue #002FA7） ===== -->
+    <!-- 克莱因蓝原始色，用作深底色 / 按下态 / 渐变 -->
+    <color name="klein_blue">#002FA7</color>
+    <!-- 提亮的克莱因蓝：深色玻璃背景上保证可读，作为全应用主题强调色 -->
+    <color name="theme_color">#3D5CC7</color>
+    <color name="accent_blue">#3D5CC7</color>
     <color name="accent_green">#30D158</color>
     <color name="accent_red">#FF453A</color>
     <color name="accent_yellow">#FFD60A</color>
@@ -12,8 +15,9 @@
     <color name="back_ground_color">#0A0A0C</color>
     <color name="bg_dark">#0A0A0C</color>
     <color name="surface_dark">#1C1C1E</color>
-    <color name="surface_glass_top">#26262A</color>
-    <color name="surface_glass_bottom">#141417</color>
+    <!-- 玻璃顶：带克莱因蓝调的高光，玻璃拟态更明显 -->
+    <color name="surface_glass_top">#2E3457</color>
+    <color name="surface_glass_bottom">#14161E</color>
     <color name="screen_off_mask">#000000</color>
 
     <!-- ===== 文字层级 ===== -->
@@ -25,7 +29,8 @@
     <color name="divider_dark">#2C2C2E</color>
 
     <!-- ===== 状态胶囊底色 ===== -->
-    <color name="chip_blue_bg">#1A2C47</color>
+    <!-- 克莱因蓝调深色容器（colorPrimaryContainer / 选中底色） -->
+    <color name="chip_blue_bg">#1D2E60</color>
     <color name="chip_green_bg">#163A24</color>
     <color name="chip_red_bg">#3A1B1E</color>
     <color name="chip_yellow_bg">#3A3214</color>
@@ -38,7 +43,7 @@
     <color name="lib_line_color">#2C2C2E</color>
     <color name="black">#FFFFFF</color>
     <color name="white">#FFFFFF</color>
-    <color name="blue">#0A84FF</color>
+    <color name="blue">#3D5CC7</color>
     <color name="green">#30D158</color>
     <color name="red">#FF453A</color>
 </resources>

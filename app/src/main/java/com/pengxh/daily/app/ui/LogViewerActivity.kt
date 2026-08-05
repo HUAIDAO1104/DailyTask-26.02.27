@@ -1,12 +1,16 @@
 package com.pengxh.daily.app.ui
 
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Environment
 import androidx.core.content.FileProvider
+import com.google.android.material.button.MaterialButton
 import com.pengxh.daily.app.R
 import com.pengxh.daily.app.databinding.ActivityLogViewerBinding
 import com.pengxh.kt.lite.base.KotlinBaseActivity
+import com.pengxh.kt.lite.extensions.convertColor
 import com.pengxh.kt.lite.extensions.show
 import java.io.File
 import java.text.SimpleDateFormat
@@ -64,12 +68,32 @@ class LogViewerActivity : KotlinBaseActivity<ActivityLogViewerBinding>() {
         showingCheckinLog = false
         binding.toolbar.title = "运行日志"
         binding.logView.text = readTail(currentRuntimeLogFile())
+        updateLogButtonStyles()
     }
 
     private fun showCheckinLog() {
         showingCheckinLog = true
         binding.toolbar.title = "打卡日志（本月）"
         binding.logView.text = readTail(currentCheckinLogFile())
+        updateLogButtonStyles()
+    }
+
+    /** 当前选中的日志页按钮高亮主题色，另一个置为玻璃底色 */
+    private fun updateLogButtonStyles() {
+        applyLogButtonStyle(binding.runtimeLogButton, !showingCheckinLog)
+        applyLogButtonStyle(binding.checkinLogButton, showingCheckinLog)
+    }
+
+    private fun applyLogButtonStyle(button: MaterialButton, active: Boolean) {
+        val bg = if (active) {
+            R.color.theme_color.convertColor(this)
+        } else {
+            R.color.surface_glass_top.convertColor(this)
+        }
+        button.backgroundTintList = ColorStateList.valueOf(bg)
+        button.setTextColor(
+            if (active) Color.WHITE else R.color.text_primary.convertColor(this)
+        )
     }
 
     private fun logDir(): File? {

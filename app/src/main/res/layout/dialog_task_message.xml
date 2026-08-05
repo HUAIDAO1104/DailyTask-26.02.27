@@ -19,7 +19,8 @@
             android:gravity="center"
             android:text="导出任务"
             android:textColor="@color/lib_text_color"
-            android:textSize="@dimen/lib_sp_16" />
+            android:textSize="@dimen/lib_sp_16"
+            android:textStyle="bold" />
 
         <View
             android:layout_width="match_parent"

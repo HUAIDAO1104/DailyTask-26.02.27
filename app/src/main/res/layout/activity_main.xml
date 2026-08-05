@@ -139,8 +139,8 @@
                         android:padding="@dimen/dp_18">
 
                         <FrameLayout
-                            android:layout_width="92dp"
-                            android:layout_height="92dp">
+                            android:layout_width="88dp"
+                            android:layout_height="88dp">
 
                             <com.pengxh.daily.app.widgets.RingProgressView
                                 android:id="@+id/ringProgressView"
@@ -151,7 +151,7 @@
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="@dimen/dp_20"
+                            android:layout_marginStart="@dimen/dp_18"
                             android:layout_weight="1"
                             android:orientation="vertical">
 
@@ -169,7 +169,7 @@
                                 android:includeFontPadding="false"
                                 android:text="--:--"
                                 android:textColor="@color/text_primary"
-                                android:textSize="28sp"
+                                android:textSize="24sp"
                                 android:textStyle="bold" />
 
                             <com.google.android.material.textview.MaterialTextView
@@ -177,7 +177,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"
-                                android:singleLine="true"
+                                android:ellipsize="end"
+                                android:maxLines="2"
                                 android:text="等待执行"
                                 android:textColor="@color/theme_color"
                                 android:textSize="@dimen/sp_13" />
