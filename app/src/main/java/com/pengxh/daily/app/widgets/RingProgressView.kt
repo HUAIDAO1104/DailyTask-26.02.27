@@ -37,14 +37,14 @@ class RingProgressView @JvmOverloads constructor(
 
     private val countPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
-        textSize = 18f.dp()
+        textSize = 17f.dp()
         typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
         textAlign = Paint.Align.CENTER
     }
 
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.argb(153, 255, 255, 255)
-        textSize = 10f.dp()
+        textSize = 9f.dp()
         textAlign = Paint.Align.CENTER
     }
 
@@ -75,13 +75,20 @@ class RingProgressView @JvmOverloads constructor(
             canvas.drawArc(ringRect, -90f, 360f * progress, false, progressPaint)
         }
 
+        val cx = width / 2f
         val cy = height / 2f
-        // 环心计数：文字中心精确对齐圆心，避免整体被压向下方
-        val countBaseline = cy - (countPaint.ascent() + countPaint.descent()) / 2f
-        canvas.drawText("$doneCount/$totalCount", width / 2f, countBaseline, countPaint)
 
-        // 环下标签：紧贴计数底部，保持整体在环内
-        val labelBaseline = countBaseline + countPaint.descent() + 4f.dp() - labelPaint.ascent()
-        canvas.drawText("今日进度", width / 2f, labelBaseline, labelPaint)
+        // 环心计数：文字中心精确对齐圆心
+        val countBaseline = cy - (countPaint.ascent() + countPaint.descent()) / 2f
+        canvas.drawText("$doneCount/$totalCount", cx, countBaseline, countPaint)
+
+        // 环下标签：以圆环内圈边缘为基准留安全边距，避免压到圆环
+        val innerEdge = ringRect.width() / 2f - stroke / 2f
+        val labelBaseline = cy + (innerEdge - 5f.dp()) - labelPaint.descent()
+        val countBottom = countBaseline + countPaint.descent()
+        val labelTop = labelBaseline + labelPaint.ascent()
+        if (labelTop > countBottom) {
+            canvas.drawText("今日进度", cx, labelBaseline, labelPaint)
+        }
     }
 }

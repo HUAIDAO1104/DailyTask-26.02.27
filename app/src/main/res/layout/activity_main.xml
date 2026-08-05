@@ -139,8 +139,8 @@
                         android:padding="@dimen/dp_18">
 
                         <FrameLayout
-                            android:layout_width="80dp"
-                            android:layout_height="80dp">
+                            android:layout_width="84dp"
+                            android:layout_height="84dp">
 
                             <com.pengxh.daily.app.widgets.RingProgressView
                                 android:id="@+id/ringProgressView"
@@ -290,7 +290,7 @@
                         </LinearLayout>
 
                         <LinearLayout
-                            android:id="@+id/quickNoticeLayout"
+                            android:id="@+id/quickCommandLayout"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="@dimen/dp_8"
@@ -309,7 +309,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="6dp"
-                                android:text="通知记录"
+                                android:text="快捷指令"
                                 android:textColor="@color/text_primary"
                                 android:textSize="@dimen/sp_13" />
                         </LinearLayout>

@@ -49,6 +49,7 @@ import com.pengxh.daily.app.utils.SkipDates
 import com.pengxh.daily.app.utils.TimeKit
 import com.pengxh.daily.app.utils.UpdateManager
 import com.pengxh.daily.app.widgets.CalendarMultiSelectDialog
+import com.pengxh.daily.app.widgets.CommandHelpDialog
 import com.pengxh.kt.lite.adapter.NormalRecyclerAdapter
 import com.pengxh.kt.lite.base.KotlinBaseActivity
 import com.pengxh.kt.lite.divider.RecyclerViewItemOffsets
@@ -532,8 +533,11 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
             showSkipDatesDialog()
         }
 
-        binding.quickNoticeLayout.setOnClickListener {
-            navigatePageTo<NoticeRecordActivity>()
+        binding.quickCommandLayout.setOnClickListener {
+            CommandHelpDialog.Builder()
+                .setContext(this)
+                .build()
+                .show()
         }
 
         binding.quickStatsLayout.setOnClickListener {
