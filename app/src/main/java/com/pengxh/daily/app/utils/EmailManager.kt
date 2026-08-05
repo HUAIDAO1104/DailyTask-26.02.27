@@ -2,12 +2,10 @@ package com.pengxh.daily.app.utils
 
 import android.content.Context
 import android.os.BatteryManager
-import android.util.Log
 import com.pengxh.daily.app.BuildConfig
 import com.pengxh.daily.app.sqlite.DatabaseWrapper
 import com.pengxh.kt.lite.extensions.getSystemService
 import com.pengxh.kt.lite.extensions.timestampToDate
-import com.pengxh.kt.lite.extensions.toJson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,7 +19,6 @@ import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 
 class EmailManager(private val context: Context) {
-    private val kTag = "EmailManager"
 
     private fun createSmtpProperties(): Properties {
         val props = Properties().apply {
@@ -56,14 +53,14 @@ class EmailManager(private val context: Context) {
         onSuccess: (() -> Unit)? = null,
         onFailure: ((String) -> Unit)? = null
     ) {
-        val configs = DatabaseWrapper.loadAll()
-        if (configs.isEmpty()) {
+        // 按创建时间倒序取最新一条配置；loadAll() 是无序查询，last() 不可靠
+        val config = DatabaseWrapper.loadEmailConfig()
+        if (config == null) {
             onFailure?.invoke("邮箱未配置，无法发送邮件")
             return
         }
 
-        val config = configs.last()
-        Log.d(kTag, "邮箱配置: ${config.toJson()}")
+        // 注意：不要把 config 打进日志，里面包含 SMTP 授权码明文
 
         val authenticator = EmailAuthenticator(config.outbox, config.authCode)
         val props = createSmtpProperties()

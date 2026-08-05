@@ -10,20 +10,29 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- 开机自启：重启手机后恢复前台服务与任务链 -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- 应用内更新：跳转系统安装器安装下载的更新包 -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <!-- 此权限在适用于Android 10以下（包含），Android 11 引入queries，但勉强能用，再往上就不行了，只能通过queries查询指定的应用 -->
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
         android:maxSdkVersion="30" />
 
+    <!--
+      allowBackup=false：邮箱授权码存于本地数据库，禁止 adb backup 导出；
+      usesCleartextTraffic=false：应用内网络请求（邮件 SSL、节假日 HTTPS API、网络预热 HTTPS）
+      均为加密连接，无需放行明文 HTTP。
+    -->
     <application
         android:name=".DailyTaskApplication"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/Theme.DailyTask"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="false">
         <activity
             android:name=".ui.MainActivity"
             android:configChanges="orientation|screenSize"
@@ -40,6 +49,33 @@
         <activity android:name=".ui.TaskConfigActivity" />
         <activity android:name=".ui.NoticeRecordActivity" />
         <activity android:name=".ui.QuestionAndAnswerActivity" />
+        <activity android:name=".ui.LogViewerActivity" />
+
+        <!-- 任务闹钟接收器：进程死亡后系统也能唤起（仅接收本应用显式 intent） -->
+        <receiver
+            android:name=".service.TaskAlarmReceiver"
+            android:exported="false" />
+
+        <!-- 开机自启：BOOT_COMPLETED 是系统保护广播，其他应用无法伪造 -->
+        <receiver
+            android:name=".service.BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- 日志分享 -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <service android:name=".service.FloatingWindowService" />
         <service

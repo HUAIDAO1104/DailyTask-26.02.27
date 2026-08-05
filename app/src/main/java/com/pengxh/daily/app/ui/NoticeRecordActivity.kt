@@ -43,6 +43,8 @@ class NoticeRecordActivity : KotlinBaseActivity<ActivityNoticeBinding>() {
 
                         override fun onConfirmClick() {
                             DatabaseWrapper.deleteAllNotice()
+                            // 页码重置到第一页，防止清空后下拉刷新/加载更多沿用旧 offset
+                            offset = 1
                             binding.emptyView.visibility = View.VISIBLE
                             binding.recyclerView.visibility = View.GONE
                         }
@@ -80,7 +82,9 @@ class NoticeRecordActivity : KotlinBaseActivity<ActivityNoticeBinding>() {
     override fun initEvent() {
         binding.refreshLayout.setOnRefreshListener {
             isRefresh = true
-            offset = 0
+            // 页码从 1 开始（SQL OFFSET = (offset-1)*10），
+            // 置 0 会算出负的 OFFSET，且之后 loadMore 自增回 1 会重复加载第一页
+            offset = 1
             object : CountDownTimer(1000, 500) {
                 override fun onTick(millisUntilFinished: Long) {}
                 override fun onFinish() {

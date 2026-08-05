@@ -61,7 +61,27 @@ enum class MessageType(val action: String) {
     /**
      * - 更新悬浮窗倒计时
      * */
-    UPDATE_FLOATING_WINDOW_TIME("com.pengxh.daily.app.BROADCAST_UPDATE_FLOATING_WINDOW_TIME_ACTION");
+    UPDATE_FLOATING_WINDOW_TIME("com.pengxh.daily.app.BROADCAST_UPDATE_FLOATING_WINDOW_TIME_ACTION"),
+
+    /**
+     * - 任务引擎状态变化（引擎 → UI），携带 state/taskIndex/actualTime/message/active
+     * */
+    TASK_STATE_CHANGED("com.pengxh.daily.app.BROADCAST_TASK_STATE_CHANGED_ACTION"),
+
+    /**
+     * - UI 查询任务引擎当前状态（UI → 引擎），引擎收到后回报 TASK_STATE_CHANGED
+     * */
+    QUERY_TASK_STATE("com.pengxh.daily.app.BROADCAST_QUERY_TASK_STATE_ACTION"),
+
+    /**
+     * - 远程「打卡」指令触发的一次性手动打卡（通知监听服务 → 引擎）
+     * */
+    MANUAL_CHECKIN("com.pengxh.daily.app.BROADCAST_MANUAL_CHECKIN_ACTION"),
+
+    /**
+     * - 请假日期列表发生变化（UI/远程指令 → 引擎），引擎重新评估今日任务
+     * */
+    SKIP_DATES_CHANGED("com.pengxh.daily.app.BROADCAST_SKIP_DATES_CHANGED_ACTION");
 
     companion object {
         fun fromAction(action: String): MessageType? {

@@ -120,6 +120,52 @@
             android:background="#CCC" />
 
         <RelativeLayout
+            android:id="@+id/whitelistLayout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/itemLayoutHeight"
+            android:background="@color/white"
+            android:paddingHorizontal="@dimen/dp_16">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="指令白名单"
+                    android:textColor="@color/text_default_color"
+                    android:textSize="@dimen/sp_16" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_4"
+                    android:singleLine="true"
+                    android:text="设置后，只响应指定昵称/群名发来的远程指令"
+                    android:textColor="#999999"
+                    android:textSize="@dimen/sp_10" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/whitelistView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:gravity="center_vertical"
+                android:textSize="@dimen/sp_16" />
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:layout_marginHorizontal="@dimen/dp_16"
+            android:background="#CCC" />
+
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="@dimen/itemLayoutHeight"
             android:background="@color/white"
@@ -283,6 +329,144 @@
                     android:textSize="@dimen/sp_16" />
             </RelativeLayout>
         </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:layout_marginHorizontal="@dimen/dp_16"
+            android:background="#CCC" />
+
+        <RelativeLayout
+            android:id="@+id/weekScheduleLayout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/itemLayoutHeight"
+            android:background="@color/white"
+            android:paddingHorizontal="@dimen/dp_16">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="打卡星期"
+                    android:textColor="@color/text_default_color"
+                    android:textSize="@dimen/sp_16" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_4"
+                    android:singleLine="true"
+                    android:text="设置每周哪几天打卡（大小周/排班适用）"
+                    android:textColor="#999999"
+                    android:textSize="@dimen/sp_10" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/weekScheduleView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:gravity="center_vertical"
+                android:textSize="@dimen/sp_16" />
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:layout_marginHorizontal="@dimen/dp_16"
+            android:background="#CCC" />
+
+        <RelativeLayout
+            android:id="@+id/skipDatesLayout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/itemLayoutHeight"
+            android:background="@color/white"
+            android:paddingHorizontal="@dimen/dp_16">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="请假日期"
+                    android:textColor="@color/text_default_color"
+                    android:textSize="@dimen/sp_16" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_4"
+                    android:singleLine="true"
+                    android:text="指定日期全天不打卡，也可远程发【请假】【销假】"
+                    android:textColor="#999999"
+                    android:textSize="@dimen/sp_10" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/skipDatesView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:gravity="center_vertical"
+                android:textSize="@dimen/sp_16" />
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:layout_marginHorizontal="@dimen/dp_16"
+            android:background="#CCC" />
+
+        <RelativeLayout
+            android:id="@+id/holidayFailLayout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/itemLayoutHeight"
+            android:background="@color/white"
+            android:paddingHorizontal="@dimen/dp_16">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="节假日查询失败"
+                    android:textColor="@color/text_default_color"
+                    android:textSize="@dimen/sp_16" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_4"
+                    android:singleLine="true"
+                    android:text="网络异常导致无法判断节假日时的处理策略"
+                    android:textColor="#999999"
+                    android:textSize="@dimen/sp_10" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/holidayFailView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:gravity="center_vertical"
+                android:textSize="@dimen/sp_16" />
+        </RelativeLayout>
 
         <View
             android:layout_width="match_parent"

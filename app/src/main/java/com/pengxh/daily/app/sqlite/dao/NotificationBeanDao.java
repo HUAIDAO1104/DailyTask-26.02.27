@@ -21,4 +21,8 @@ public interface NotificationBeanDao {
 
     @Insert
     void insert(NotificationBean bean);
+
+    // postTime 是 "yyyy-MM-dd HH:mm:ss" 定长字符串，字典序即时间序，可直接比较
+    @Query("DELETE FROM notice_record_table WHERE postTime < :deadline")
+    int deleteOlderThan(String deadline);
 }

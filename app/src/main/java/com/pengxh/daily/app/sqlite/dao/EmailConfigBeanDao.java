@@ -17,6 +17,9 @@ public interface EmailConfigBeanDao {
     @Update
     void update(EmailConfigBean bean);
 
+    @Query("DELETE FROM email_config_table")
+    void deleteAll();
+
     @Query("SELECT * FROM email_config_table ORDER BY createTime DESC LIMIT 1")
     EmailConfigBean loadEmailConfig();
 

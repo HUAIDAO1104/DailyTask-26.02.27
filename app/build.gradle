@@ -21,8 +21,8 @@ android {
         applicationId 'com.pengxh.daily.app'
         minSdk 26
         targetSdk 36
-        versionCode 2251
-        versionName '2.2.5.1'
+        versionCode 2252
+        versionName '2.2.6.0'
     }
 
     flavorDimensions += 'versionCode'
@@ -55,7 +55,10 @@ android {
         }
     }
 
-    GString id = "com.alibaba.android.${createRandomCode()}"
+    // 固定包名：保留阿里系样式（降低被目标应用识别的特征），
+    // 同时保证可以覆盖安装升级——随机包名会导致每次升级都是全新安装，
+    // 任务、邮箱配置、持久化配置全部丢失
+    String id = "com.alibaba.android.mqzvxr"
     productFlavors {
         daily {
             applicationId = id
@@ -88,16 +91,6 @@ android {
     }
 }
 
-static def createRandomCode() {
-    String alphabetsInLowerCase = 'abcdefghijklmnopqrstuvwxyz'
-    String randomString = ""
-    for (i in 0..5) {
-        int randomIndex = Math.random() * alphabetsInLowerCase.length()
-        randomString += alphabetsInLowerCase[randomIndex]
-    }
-    return randomString
-}
-
 static def getBuildDate() {
     SimpleDateFormat dateFormat = new SimpleDateFormat('yyyyMMdd', Locale.CHINA)
     return dateFormat.format(System.currentTimeMillis())
@@ -119,8 +112,6 @@ dependencies {
     //日期、时间选择器
     implementation 'com.github.gzu-liyujiang.AndroidPicker:WheelPicker:4.1.14'
     implementation 'com.google.code.gson:gson:2.13.2'
-    //事件总线
-    implementation 'org.greenrobot:eventbus:3.3.1'
     //异常日志记录
     implementation 'com.tencent.bugly:crashreport:4.1.9.3'
 }

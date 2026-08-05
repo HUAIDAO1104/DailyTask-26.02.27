@@ -44,7 +44,9 @@ class BroadcastManager {
 
             val filter = IntentFilter(action)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
+                // 本管理器只用于应用内部通信，NOT_EXPORTED 既能收发本应用广播，
+                // 又能防止其他应用伪造 START/STOP_DAILY_TASK 等广播远程操控本应用
+                context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
             } else {
                 context.registerReceiver(receiver, filter)
             }

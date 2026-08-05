@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- 日志分享：日志文件先复制到 cache/logs 再授予临时读取权限 -->
+    <cache-path
+        name="shared_logs"
+        path="logs/" />
+
+    <!-- 应用内更新：DownloadManager 下载到外部存储的 Download 目录 -->
+    <external-files-path
+        name="apk_downloads"
+        path="Download/" />
+</paths>

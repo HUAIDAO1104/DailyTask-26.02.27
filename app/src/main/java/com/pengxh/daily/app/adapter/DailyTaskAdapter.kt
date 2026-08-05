@@ -83,23 +83,20 @@ class DailyTaskAdapter(
     fun refresh(
         newRows: MutableList<DailyTaskBean>, itemComparator: ItemComparator<DailyTaskBean>? = null
     ) {
-        if (newRows.isEmpty()) {
-            return
-        }
-
-        val oldSize = dataBeans.size
+        // 防御性拷贝：调用方传入的列表可能就是 dataBeans 本身（如删除条目后直接回传），
+        // 若直接 clear() 会把数据源一起清空，导致数据丢失及 RecyclerView 状态不一致崩溃
+        val snapshot = ArrayList(newRows)
 
         if (itemComparator != null) {
             val oldDataSnapshot = ArrayList(dataBeans) // 旧数据副本
-            val newDataSnapshot = ArrayList(newRows)  // 新数据副本
 
             val diffCallback = object : DiffUtil.Callback() {
                 override fun getOldListSize(): Int = oldDataSnapshot.size
-                override fun getNewListSize(): Int = newDataSnapshot.size
+                override fun getNewListSize(): Int = snapshot.size
 
                 override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
                     return itemComparator.areItemsTheSame(
-                        oldDataSnapshot[oldItemPosition], newDataSnapshot[newItemPosition]
+                        oldDataSnapshot[oldItemPosition], snapshot[newItemPosition]
                     )
                 }
 
@@ -107,7 +104,7 @@ class DailyTaskAdapter(
                     oldItemPosition: Int, newItemPosition: Int
                 ): Boolean {
                     return itemComparator.areContentsTheSame(
-                        oldDataSnapshot[oldItemPosition], newDataSnapshot[newItemPosition]
+                        oldDataSnapshot[oldItemPosition], snapshot[newItemPosition]
                     )
                 }
             }
@@ -117,7 +114,7 @@ class DailyTaskAdapter(
                     val result = DiffUtil.calculateDiff(diffCallback)
                     withContext(Dispatchers.Main) {
                         dataBeans.clear()
-                        dataBeans.addAll(newDataSnapshot)
+                        dataBeans.addAll(snapshot)
                         result.dispatchUpdatesTo(this@DailyTaskAdapter)
                     }
                 } catch (e: Exception) {
@@ -125,15 +122,13 @@ class DailyTaskAdapter(
                 }
             }
         } else {
-            val newSize = newRows.size
+            // 无差异对比时整体替换并全量刷新。任务列表数据量很小（个位数），
+            // notifyDataSetChanged 开销可忽略，且能保证增/删/清空任何场景下状态一致
+            // （旧实现里 notifyItemRangeRemoved + notifyItemRangeChanged 在
+            //   传入列表与 dataBeans 同引用时会计算出错误的通知范围，导致越界崩溃）
             dataBeans.clear()
-            dataBeans.addAll(newRows)
-
-            // 新数据比旧数据少，需要通知删除部分 item ，否则会越界
-            if (newSize < oldSize) {
-                notifyItemRangeRemoved(newSize, oldSize - newSize)
-            }
-            notifyItemRangeChanged(0, newSize)
+            dataBeans.addAll(snapshot)
+            notifyDataSetChanged()
         }
     }
 

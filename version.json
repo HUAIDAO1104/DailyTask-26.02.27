@@ -1,0 +1,10 @@
+{
+  "versionCode": 2252,
+  "versionName": "2.2.6.0",
+  "changelog": "1. 请假支持自然日期批量添加（如：明天、8月12日、8月12日到8月14日、下周三到下周五），并支持在列表中点击单条日期直接移除；\n2. 远程「请假/销假」支持灵活日期参数，如「请假 明天」「请假 8月12日到8月14日」「销假 下周三」「销假 全部」；\n3. 新增应用内检查更新：每天首次打开自动检测，也可在设置页手动点击「当前版本」检查；\n4. 修复部分已知问题，优化稳定性。",
+  "mirrors": [
+    "https://cdn.jsdelivr.net/gh/HUAIDAO1104/DailyTask-26.02.27@master/apk/daily/release/DT_20260805_2.2.6.0.apk",
+    "https://gh-proxy.com/https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/master/apk/daily/release/DT_20260805_2.2.6.0.apk",
+    "https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/master/apk/daily/release/DT_20260805_2.2.6.0.apk"
+  ]
+}

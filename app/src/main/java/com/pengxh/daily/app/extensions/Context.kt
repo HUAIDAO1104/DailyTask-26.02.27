@@ -8,14 +8,12 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import androidx.core.app.NotificationManagerCompat
-import com.pengxh.daily.app.event.FloatViewTimerEvent
 import com.pengxh.daily.app.ui.MainActivity
 import com.pengxh.daily.app.utils.BroadcastManager
 import com.pengxh.daily.app.utils.Constant
 import com.pengxh.daily.app.utils.MessageType
 import com.pengxh.kt.lite.utils.SaveKeyValues
 import com.pengxh.kt.lite.widget.dialog.AlertMessageDialog
-import org.greenrobot.eventbus.EventBus
 
 /**
  * 检测通知监听服务是否被授权
@@ -43,10 +41,11 @@ fun Context.isApplicationExist(packageName: String): Boolean {
 }
 
 /**
- * 打开指定包名的apk
- * @param needCountDown 是否需要倒计时
+ * 打开指定包名的apk。
+ * 打开后的打卡超时/重试由任务引擎（CountDownTimerService）管理，
+ * 调用方无需再做任何处理。
  */
-fun Context.openApplication(needCountDown: Boolean) {
+fun Context.openApplication() {
     val targetApp = Constant.getTargetApp()
     if (!isApplicationExist(targetApp)) {
         AlertMessageDialog.Builder()
@@ -74,11 +73,6 @@ fun Context.openApplication(needCountDown: Boolean) {
         val info = activities.first()
         intent.component = ComponentName(info.activityInfo.packageName, info.activityInfo.name)
         startActivity(intent)
-    }
-
-    // 在目标应用界面更新悬浮窗倒计时
-    if (needCountDown) {
-        EventBus.getDefault().post(FloatViewTimerEvent())
     }
 }
 
