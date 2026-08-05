@@ -1,10 +1,10 @@
 {
-  "versionCode": 2300,
-  "versionName": "2.3.0.0",
-  "changelog": "1. 全新仪表盘首页：环形今日进度、下一项任务、一键启停、请假/通知/统计快捷操作；\n2. 全应用强制深色 + 毛玻璃风格，夜晚不刺眼、防 OLED 烧屏；\n3. 设置页、任务配置页改为 iOS 分组玻璃列表；\n4. 开关改为 iOS 风格（绿色轨道 + 白色圆点），弹窗与底部面板同步深色皮肤；\n5. 修复部分已知问题，优化稳定性。",
+  "versionCode": 2301,
+  "versionName": "2.3.0.1",
+  "changelog": "1. 修复应用内检查更新偶发误报「已是最新版本」的问题：改为同时比对多个镜像并取最新版本，避免个别 CDN 缓存过期导致检测不到新版本；\n2. 下载链接改为固定版本地址，更新检测更稳定可靠。",
   "mirrors": [
-    "https://cdn.jsdelivr.net/gh/HUAIDAO1104/DailyTask-26.02.27@master/apk/daily/release/DT_20260805_2.3.0.0.apk",
-    "https://gh-proxy.com/https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/master/apk/daily/release/DT_20260805_2.3.0.0.apk",
-    "https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/master/apk/daily/release/DT_20260805_2.3.0.0.apk"
+    "https://cdn.jsdelivr.net/gh/HUAIDAO1104/DailyTask-26.02.27@master/apk/daily/release/DT_20260805_2.3.0.1.apk",
+    "https://gh-proxy.com/https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/master/apk/daily/release/DT_20260805_2.3.0.1.apk",
+    "https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/master/apk/daily/release/DT_20260805_2.3.0.1.apk"
   ]
 }

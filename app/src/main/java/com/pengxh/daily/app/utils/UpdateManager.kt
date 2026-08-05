@@ -120,7 +120,9 @@ object UpdateManager {
                 val info = fetchUpdateInfo()
                 mainHandler.post {
                     if (activity.isFinishing || activity.isDestroyed) return@post
-                    if (info != null && info.versionCode > BuildConfig.VERSION_CODE) {
+                    if (info == null) {
+                        if (manual) "检查更新失败，请检查网络后重试".show(activity)
+                    } else if (info.versionCode > BuildConfig.VERSION_CODE) {
                         showUpdateDialog(activity, info)
                     } else if (manual) {
                         "当前已是最新版本".show(activity)
@@ -291,8 +293,9 @@ object UpdateManager {
         receiverRegistered = false
     }
 
-    /** 依次尝试多个镜像拉取 version.json，全部失败返回 null */
+    /** 拉取全部镜像的 version.json，取 versionCode 最大的结果，防止单个镜像缓存过期导致误报 */
     private fun fetchUpdateInfo(): UpdateInfo? {
+        var newest: UpdateInfo? = null
         for (url in versionJsonMirrors) {
             try {
                 val json = httpGetString(url) ?: continue
@@ -307,12 +310,14 @@ object UpdateManager {
                     }
                 } ?: emptyList()
                 if (mirrors.isEmpty()) continue
-                return UpdateInfo(versionCode, versionName, changelog, mirrors)
+                if (newest == null || versionCode > newest.versionCode) {
+                    newest = UpdateInfo(versionCode, versionName, changelog, mirrors)
+                }
             } catch (e: Exception) {
-                // 该镜像不可用，尝试下一个
+                // 该镜像不可用，跳过继续下一个
             }
         }
-        return null
+        return newest
     }
 
     private fun httpGetString(url: String): String? {
