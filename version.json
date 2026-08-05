@@ -1,7 +1,7 @@
 {
-  "versionCode": 2302,
-  "versionName": "2.3.0.2",
-  "changelog": "1. 新增克莱因蓝主题色，毛玻璃/玻璃拟态质感更明显；\n2. 首页排版优化：引擎状态与刷新倒计时不再拥挤截断，下一项任务描述最多两行、不再被挤断；\n3. 运行日志/打卡日志切换按钮新增选中高亮态；\n4. 弹窗标题统一加粗，清理无用布局。",
+  "versionCode": 2303,
+  "versionName": "2.3.0.3",
+  "changelog": "1. 修复首页概览卡文字换行问题：下一项任务时间与描述保持单行，不再被挤成两行；\n2. 修复进度环内「完成数/今日进度」偏离圆心的问题，文字精确居中显示；\n3. 点击版本号立即弹出「正在检查更新…」提示，不再无响应；\n4. 缩短更新检查超时，慢速镜像快速跳过。",
   "mirrors": [
     "https://cdn.jsdelivr.net/gh/HUAIDAO1104/DailyTask-26.02.27@16c8f41/apk/daily/release/DT_20260805_2.3.0.2.apk",
     "https://gh-proxy.com/https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/16c8f41/apk/daily/release/DT_20260805_2.3.0.2.apk",

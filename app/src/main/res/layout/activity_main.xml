@@ -139,8 +139,8 @@
                         android:padding="@dimen/dp_18">
 
                         <FrameLayout
-                            android:layout_width="88dp"
-                            android:layout_height="88dp">
+                            android:layout_width="80dp"
+                            android:layout_height="80dp">
 
                             <com.pengxh.daily.app.widgets.RingProgressView
                                 android:id="@+id/ringProgressView"
@@ -167,10 +167,15 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:includeFontPadding="false"
+                                android:singleLine="true"
                                 android:text="--:--"
                                 android:textColor="@color/text_primary"
                                 android:textSize="24sp"
-                                android:textStyle="bold" />
+                                android:textStyle="bold"
+                                app:autoSizeMaxTextSize="24sp"
+                                app:autoSizeMinTextSize="16sp"
+                                app:autoSizeStepGranularity="1sp"
+                                app:autoSizeTextType="uniform" />
 
                             <com.google.android.material.textview.MaterialTextView
                                 android:id="@+id/nextTaskDescView"
@@ -178,7 +183,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"
                                 android:ellipsize="end"
-                                android:maxLines="2"
+                                android:singleLine="true"
                                 android:text="等待执行"
                                 android:textColor="@color/theme_color"
                                 android:textSize="@dimen/sp_13" />
@@ -186,12 +191,14 @@
 
                         <TextView
                             android:id="@+id/executeTaskButton"
-                            android:layout_width="88dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="46dp"
+                            android:layout_marginStart="@dimen/dp_8"
                             android:background="@drawable/bg_pill_primary"
                             android:clickable="true"
                             android:focusable="true"
                             android:gravity="center"
+                            android:paddingHorizontal="@dimen/dp_16"
                             android:text="启动"
                             android:textColor="@color/white"
                             android:textSize="@dimen/sp_15"

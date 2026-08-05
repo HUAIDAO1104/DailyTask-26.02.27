@@ -37,14 +37,14 @@ class RingProgressView @JvmOverloads constructor(
 
     private val countPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
-        textSize = 22f.dp()
+        textSize = 18f.dp()
         typeface = Typeface.create("sans-serif-medium", Typeface.BOLD)
         textAlign = Paint.Align.CENTER
     }
 
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.argb(153, 255, 255, 255)
-        textSize = 11f.dp()
+        textSize = 10f.dp()
         textAlign = Paint.Align.CENTER
     }
 
@@ -76,12 +76,12 @@ class RingProgressView @JvmOverloads constructor(
         }
 
         val cy = height / 2f
-        // 环心计数
-        val countBaseline = cy + (countPaint.textSize - countPaint.descent() - countPaint.ascent()) / 2f
+        // 环心计数：文字中心精确对齐圆心，避免整体被压向下方
+        val countBaseline = cy - (countPaint.ascent() + countPaint.descent()) / 2f
         canvas.drawText("$doneCount/$totalCount", width / 2f, countBaseline, countPaint)
 
-        // 环下标签
-        val labelBaseline = cy + countPaint.textSize / 2f + labelPaint.textSize + 6f.dp()
+        // 环下标签：紧贴计数底部，保持整体在环内
+        val labelBaseline = countBaseline + countPaint.descent() + 4f.dp() - labelPaint.ascent()
         canvas.drawText("今日进度", width / 2f, labelBaseline, labelPaint)
     }
 }

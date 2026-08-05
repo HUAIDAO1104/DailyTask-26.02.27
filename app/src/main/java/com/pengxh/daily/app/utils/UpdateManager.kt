@@ -46,7 +46,7 @@ object UpdateManager {
 
     private const val UPDATE_LAST_CHECK_DATE_KEY = "UPDATE_LAST_CHECK_DATE_KEY"
     private const val CONNECT_TIMEOUT_MS = 10000
-    private const val READ_TIMEOUT_MS = 10000
+    private const val READ_TIMEOUT_MS = 6000
 
     data class UpdateInfo(
         val versionCode: Int,
@@ -113,7 +113,11 @@ object UpdateManager {
 
     /** 检查更新；manual=true 时无更新或失败给出提示 */
     fun check(activity: Activity, manual: Boolean) {
-        if (checking) return
+        if (checking) {
+            if (manual) "正在检查更新，请稍候…".show(activity)
+            return
+        }
+        if (manual) "正在检查更新…".show(activity)
         checking = true
         Thread {
             try {
