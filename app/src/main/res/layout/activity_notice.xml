@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/rootView"
     android:layout_width="match_parent"
-    android:background="@color/back_ground_color"
+    android:background="@color/bg_dark"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
@@ -11,11 +11,11 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/theme_color"
+        android:background="@color/bg_dark"
         app:menu="@menu/notice_history_top_bar_menu"
         app:navigationIcon="@drawable/ic_title_left"
         app:title="通知记录"
-        app:titleTextColor="@color/white" />
+        app:titleTextColor="@color/text_primary" />
 
     <com.scwang.smartrefresh.layout.SmartRefreshLayout
         android:id="@+id/refreshLayout"

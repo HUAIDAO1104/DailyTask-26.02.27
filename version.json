@@ -1,10 +1,10 @@
 {
-  "versionCode": 2252,
-  "versionName": "2.2.6.0",
-  "changelog": "1. 请假改为日历多选：直接点选/取消某天，可一次选多天、单独取消某天；\n2. 修复任务配置页面在小屏手机上无法滚动的问题；\n3. 远程「请假/销假」支持灵活日期参数，如「请假 明天」「请假 8月12日到8月14日」「销假 下周三」「销假 全部」；\n4. 新增应用内检查更新：每天首次打开自动检测，也可在设置页手动点击「当前版本」检查；\n5. 修复部分已知问题，优化稳定性。",
+  "versionCode": 2300,
+  "versionName": "2.3.0.0",
+  "changelog": "1. 全新仪表盘首页：环形今日进度、下一项任务、一键启停、请假/通知/统计快捷操作；\n2. 全应用强制深色 + 毛玻璃风格，夜晚不刺眼、防 OLED 烧屏；\n3. 设置页、任务配置页改为 iOS 分组玻璃列表；\n4. 开关改为 iOS 风格（绿色轨道 + 白色圆点），弹窗与底部面板同步深色皮肤；\n5. 修复部分已知问题，优化稳定性。",
   "mirrors": [
-    "https://cdn.jsdelivr.net/gh/HUAIDAO1104/DailyTask-26.02.27@master/apk/daily/release/DT_20260805_2.2.6.0.apk",
-    "https://gh-proxy.com/https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/master/apk/daily/release/DT_20260805_2.2.6.0.apk",
-    "https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/master/apk/daily/release/DT_20260805_2.2.6.0.apk"
+    "https://cdn.jsdelivr.net/gh/HUAIDAO1104/DailyTask-26.02.27@master/apk/daily/release/DT_20260805_2.3.0.0.apk",
+    "https://gh-proxy.com/https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/master/apk/daily/release/DT_20260805_2.3.0.0.apk",
+    "https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/master/apk/daily/release/DT_20260805_2.3.0.0.apk"
   ]
 }

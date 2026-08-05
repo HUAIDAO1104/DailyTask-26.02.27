@@ -86,7 +86,7 @@ class CalendarGridAdapter(
         when {
             date < today -> {
                 // 过去日期：置灰不可选
-                tv.setTextColor(Color.parseColor("#CCCCCC"))
+                tv.setTextColor(Color.parseColor("#5A5A5E"))
                 tv.background = null
             }
 
@@ -103,7 +103,7 @@ class CalendarGridAdapter(
             }
 
             else -> {
-                tv.setTextColor(Color.parseColor("#333333"))
+                tv.setTextColor(Color.parseColor("#F2F2F7"))
                 tv.background = null
             }
         }

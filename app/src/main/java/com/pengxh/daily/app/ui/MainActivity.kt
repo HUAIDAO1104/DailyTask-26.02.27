@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -44,8 +45,10 @@ import com.pengxh.daily.app.utils.BroadcastManager
 import com.pengxh.daily.app.utils.Constant
 import com.pengxh.daily.app.utils.LogFileManager
 import com.pengxh.daily.app.utils.MessageType
+import com.pengxh.daily.app.utils.SkipDates
 import com.pengxh.daily.app.utils.TimeKit
 import com.pengxh.daily.app.utils.UpdateManager
+import com.pengxh.daily.app.widgets.CalendarMultiSelectDialog
 import com.pengxh.kt.lite.adapter.NormalRecyclerAdapter
 import com.pengxh.kt.lite.base.KotlinBaseActivity
 import com.pengxh.kt.lite.divider.RecyclerViewItemOffsets
@@ -63,6 +66,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -94,7 +98,8 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
     }
 
     private val mainHandler = Handler(Looper.getMainLooper())
-    private val dateFormat = SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss EEEE", Locale.getDefault())
+    private val dateFormat = SimpleDateFormat("yyyy年M月d日 EEEE", Locale.getDefault())
+    private val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
     private lateinit var insetsController: WindowInsetsControllerCompat
     private lateinit var gestureDetector: GestureDetector
     private lateinit var dailyTaskAdapter: DailyTaskAdapter
@@ -148,27 +153,40 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
         isTaskStarted = intent.getBooleanExtra("active", false)
         updateExecuteButton()
 
-        binding.tipsView.text = message
         when (stateName) {
             "DONE", "SKIPPED" -> {
-                binding.tipsView.setTextColor(R.color.ios_green.convertColor(context))
+                if (message.isNotBlank()) {
+                    binding.nextTaskDescView.text = message
+                    binding.nextTaskDescView.setTextColor(R.color.ios_green.convertColor(context))
+                }
                 dailyTaskAdapter.updateCurrentTaskState(-1)
+                refreshRingProgress()
             }
 
             "FAILED" -> {
-                binding.tipsView.setTextColor(R.color.red.convertColor(context))
+                if (message.isNotBlank()) {
+                    binding.nextTaskDescView.text = message
+                    binding.nextTaskDescView.setTextColor(R.color.red.convertColor(context))
+                }
                 dailyTaskAdapter.updateCurrentTaskState(-1)
+                refreshRingProgress()
             }
 
             "COUNTING" -> {
-                binding.tipsView.setTextColor(R.color.theme_color.convertColor(context))
+                binding.nextTaskDescView.setTextColor(R.color.theme_color.convertColor(context))
+                if (message.isNotBlank()) {
+                    binding.nextTaskDescView.text = message
+                }
                 if (taskIndex >= 0) {
                     dailyTaskAdapter.updateCurrentTaskState(taskIndex, actualTime)
                 }
             }
 
             else -> {
-                binding.tipsView.setTextColor(R.color.theme_color.convertColor(context))
+                if (message.isNotBlank()) {
+                    binding.nextTaskDescView.text = message
+                    binding.nextTaskDescView.setTextColor(R.color.theme_color.convertColor(context))
+                }
                 dailyTaskAdapter.updateCurrentTaskState(-1)
             }
         }
@@ -176,14 +194,50 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
 
     private fun updateExecuteButton() {
         if (isTaskStarted) {
-            binding.executeTaskButton.setIconResource(R.mipmap.ic_stop)
-            binding.executeTaskButton.setIconTintResource(R.color.red)
+            binding.executeTaskButton.setBackgroundResource(R.drawable.bg_pill_stop)
             binding.executeTaskButton.text = "停止"
+            binding.statusCapsuleView.text = "引擎运行中"
+            binding.statusCapsuleView.setTextColor(R.color.accent_green.convertColor(context))
         } else {
-            binding.executeTaskButton.setIconResource(R.mipmap.ic_start)
-            binding.executeTaskButton.setIconTintResource(R.color.ios_green)
+            binding.executeTaskButton.setBackgroundResource(R.drawable.bg_pill_primary)
             binding.executeTaskButton.text = "启动"
+            binding.statusCapsuleView.text = "引擎待机"
+            binding.statusCapsuleView.setTextColor(R.color.text_primary.convertColor(context))
         }
+    }
+
+    /** 计算下一个待执行的最近任务时间，并刷新概览卡 */
+    private fun refreshNextTask() {
+        val now = timeFormat.format(Date())
+        val next = taskBeans.map { it.time }.sorted().firstOrNull { it >= now }
+            ?: taskBeans.firstOrNull()?.time
+        binding.nextTaskTimeView.text = next ?: "--:--"
+        binding.nextTaskDescView.setTextColor(R.color.theme_color.convertColor(context))
+        binding.nextTaskDescView.text = when {
+            taskBeans.isEmpty() -> "暂无任务"
+            next != null -> "等待执行"
+            else -> "今日任务已完成"
+        }
+    }
+
+    /** 依据当日打卡日志统计今日完成数，刷新进度环 */
+    private fun refreshRingProgress() {
+        val done = try {
+            val dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+            val month = SimpleDateFormat("yyyyMM", Locale.CHINA).format(Date())
+            val file = File(dir, "checkin_log_$month.txt")
+            if (dir == null || !file.exists()) {
+                0
+            } else {
+                val prefix = SimpleDateFormat("yyyy-MM-dd", Locale.CHINA).format(Date())
+                file.useLines { lines ->
+                    lines.count { it.startsWith("[$prefix") && it.contains("打卡成功") }
+                }
+            }
+        } catch (e: Exception) {
+            0
+        }
+        binding.ringProgressView.setProgress(done, taskBeans.size)
     }
 
     /** 从引擎持久化状态同步启动/停止按钮（页面重建时恢复 UI） */
@@ -201,50 +255,15 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
     override fun setupTopBarLayout() {
         insetsController = WindowCompat.getInsetsController(window, binding.rootView)
 
-        // 显示时间
+        // 顶栏时钟：秒级刷新当前时间与日期
         mainHandler.post(object : Runnable {
             override fun run() {
-                val currentTime = dateFormat.format(Date())
-                val parts = currentTime.split(" ")
-                binding.toolbar.apply {
-                    title = parts[2]
-                    subtitle = "${parts[0]} ${parts[1]}"
-                }
+                val now = Date()
+                binding.headerTimeView.text = timeFormat.format(now)
+                binding.headerDateView.text = dateFormat.format(now)
                 mainHandler.postDelayed(this, 1000)
             }
         })
-
-        binding.toolbar.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.menu_add_task -> {
-                    if (isTaskStarted) {
-                        "任务进行中，无法添加".show(this)
-                        return@setOnMenuItemClickListener true
-                    }
-
-                    if (taskBeans.isNotEmpty()) {
-                        createTask()
-                    } else {
-                        BottomActionSheet.Builder()
-                            .setContext(this)
-                            .setActionItemTitle(arrayListOf("添加任务", "导入任务"))
-                            .setItemTextColor(R.color.theme_color.convertColor(this))
-                            .setOnActionSheetListener(object :
-                                BottomActionSheet.OnActionSheetListener {
-                                override fun onActionItemClick(position: Int) {
-                                    when (position) {
-                                        0 -> createTask()
-                                        1 -> importTask()
-                                    }
-                                }
-                            }).build().show()
-                    }
-                }
-
-                R.id.menu_settings -> navigatePageTo<SettingsActivity>()
-            }
-            true
-        }
     }
 
     override fun initOnCreate(savedInstanceState: Bundle?) {
@@ -340,6 +359,8 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
                 marginOffset shr 1
             )
         )
+        refreshNextTask()
+        refreshRingProgress()
 
         if (SaveKeyValues.getValue("isFirst", true) as Boolean) {
             AlertMessageDialog.Builder()
@@ -479,6 +500,46 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
             }
         }
 
+        binding.addTaskButton.setOnClickListener {
+            if (isTaskStarted) {
+                "任务进行中，无法添加".show(this)
+                return@setOnClickListener
+            }
+
+            if (taskBeans.isNotEmpty()) {
+                createTask()
+            } else {
+                BottomActionSheet.Builder()
+                    .setContext(this)
+                    .setActionItemTitle(arrayListOf("添加任务", "导入任务"))
+                    .setItemTextColor(R.color.theme_color.convertColor(this))
+                    .setOnActionSheetListener(object : BottomActionSheet.OnActionSheetListener {
+                        override fun onActionItemClick(position: Int) {
+                            when (position) {
+                                0 -> createTask()
+                                1 -> importTask()
+                            }
+                        }
+                    }).build().show()
+            }
+        }
+
+        binding.settingsButton.setOnClickListener {
+            navigatePageTo<SettingsActivity>()
+        }
+
+        binding.quickLeaveLayout.setOnClickListener {
+            showSkipDatesDialog()
+        }
+
+        binding.quickNoticeLayout.setOnClickListener {
+            navigatePageTo<NoticeRecordActivity>()
+        }
+
+        binding.quickStatsLayout.setOnClickListener {
+            showMonthStats()
+        }
+
         binding.refreshView.setOnRefreshListener {
             isRefresh = true
             lifecycleScope.launch(Dispatchers.Main) {
@@ -488,6 +549,9 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
                 delay(500)
                 binding.refreshView.finishRefresh()
                 isRefresh = false
+                taskBeans = result
+                refreshNextTask()
+                refreshRingProgress()
                 dailyTaskAdapter.refresh(result, itemComparator)
             }
         }
@@ -689,6 +753,87 @@ class MainActivity : KotlinBaseActivity<ActivityMainBinding>() {
 
                 override fun onCancelClick() {}
             }).build().show()
+    }
+
+    /** 快捷操作：请假日历多选 */
+    private fun showSkipDatesDialog() {
+        CalendarMultiSelectDialog.Builder()
+            .setContext(this)
+            .setInitialDates(SkipDates.getAll())
+            .setOnDialogButtonClickListener(object :
+                CalendarMultiSelectDialog.OnDialogButtonClickListener {
+                override fun onConfirmClick(selectedDates: List<String>) {
+                    val old = SkipDates.getAll()
+                    val newSet = selectedDates.toSet()
+                    val added = newSet - old
+                    val removed = old - newSet
+                    removed.forEach { SkipDates.remove(it) }
+                    added.forEach { SkipDates.add(it) }
+                    BroadcastManager.getDefault().sendBroadcast(
+                        this@MainActivity, MessageType.SKIP_DATES_CHANGED.action
+                    )
+                    when {
+                        added.isEmpty() && removed.isEmpty() ->
+                            "请假日期未变化".show(context)
+
+                        added.isNotEmpty() && removed.isNotEmpty() ->
+                            "已添加 ${added.size} 天，取消 ${removed.size} 天".show(context)
+
+                        added.isNotEmpty() ->
+                            "已添加 ${added.size} 天请假日期".show(context)
+
+                        else ->
+                            "已取消 ${removed.size} 天请假日期".show(context)
+                    }
+                }
+            }).build().show()
+    }
+
+    /** 快捷操作：本月打卡统计 */
+    private fun showMonthStats() {
+        try {
+            val dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+            val month = SimpleDateFormat("yyyyMM", Locale.CHINA).format(Date())
+            val file = File(dir, "checkin_log_$month.txt")
+            if (dir == null || !file.exists()) {
+                "本月还没有打卡记录".show(this)
+                return
+            }
+            var success = 0
+            var fail = 0
+            var retry = 0
+            var lastSuccess = ""
+            file.forEachLine { line ->
+                when {
+                    line.contains("打卡成功") -> {
+                        success++
+                        lastSuccess = line
+                    }
+
+                    line.contains("失败-已重试") -> fail++
+                    line.contains("超时-第") -> retry++
+                }
+            }
+            val message = buildString {
+                append("打卡成功：${success}次\n")
+                append("打卡失败：${fail}次\n")
+                append("超时重试：${retry}次")
+                if (lastSuccess.isNotBlank()) {
+                    append("\n\n最近一次成功：\n$lastSuccess")
+                }
+            }
+            AlertMessageDialog.Builder()
+                .setContext(this)
+                .setTitle("本月打卡统计")
+                .setMessage(message)
+                .setPositiveButton("知道了")
+                .setOnDialogButtonClickListener(object :
+                    AlertMessageDialog.OnDialogButtonClickListener {
+                    override fun onConfirmClick() {}
+                }).build().show()
+        } catch (e: Exception) {
+            "读取统计信息失败：${e.message}".show(this)
+        }
     }
 
     override fun onNewIntent(intent: Intent) {

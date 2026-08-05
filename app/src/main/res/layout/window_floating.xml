@@ -4,8 +4,9 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
-    app:cardBackgroundColor="@color/black"
-    app:cardCornerRadius="@dimen/dp_16">
+    app:cardBackgroundColor="@color/surface_dark"
+    app:cardCornerRadius="@dimen/dp_16"
+    app:cardElevation="4dp">
 
     <LinearLayout
         android:layout_width="wrap_content"

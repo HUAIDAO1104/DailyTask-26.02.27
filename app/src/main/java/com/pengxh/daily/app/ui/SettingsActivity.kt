@@ -5,7 +5,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -63,7 +62,7 @@ class SettingsActivity : KotlinBaseActivity<ActivitySettingsBinding>() {
 
                     MessageType.NOTICE_LISTENER_DISCONNECTED -> {
                         binding.tipsView.text = "通知监听服务未开启，无法监听打卡通知"
-                        binding.tipsView.setTextColor(Color.RED)
+                        binding.tipsView.setTextColor(R.color.accent_red.convertColor(this@SettingsActivity))
                         binding.noticeSwitch.isChecked = false
                         binding.tipsView.visibility = View.VISIBLE
                     }
@@ -283,7 +282,7 @@ class SettingsActivity : KotlinBaseActivity<ActivitySettingsBinding>() {
             }
         } else {
             binding.tipsView.text = "通知监听服务未开启，无法监听打卡通知"
-            binding.tipsView.setTextColor(Color.RED)
+            binding.tipsView.setTextColor(R.color.accent_red.convertColor(this@SettingsActivity))
             binding.noticeSwitch.isChecked = false
             binding.tipsView.visibility = View.VISIBLE
         }

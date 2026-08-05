@@ -1,6 +1,5 @@
 package com.pengxh.daily.app.ui
 
-import android.graphics.Color
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.View
@@ -74,7 +73,7 @@ class NoticeRecordActivity : KotlinBaseActivity<ActivityNoticeBinding>() {
                         .setText(R.id.postTimeView, item.postTime)
                 }
             }
-            binding.recyclerView.addItemDecoration(RecyclerViewItemDivider(0f, 0f, Color.LTGRAY))
+            binding.recyclerView.addItemDecoration(RecyclerViewItemDivider(0f, 0f, 0xFF2C2C2E.toInt()))
             binding.recyclerView.adapter = noticeAdapter
         }
     }

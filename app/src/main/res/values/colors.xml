@@ -1,13 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="theme_color">#007AFF</color>
-    <color name="ios_green">#4DDC64</color>
-    <color name="back_ground_color">#F9F9F9</color>
-    <color name="text_hint_color">#CCCCCC</color>
-    <color name="text_default_color">#424242</color>
+    <!-- ===== 品牌/强调色（iOS 深色模式系统色） ===== -->
+    <color name="theme_color">#0A84FF</color>
+    <color name="accent_blue">#0A84FF</color>
+    <color name="accent_green">#30D158</color>
+    <color name="accent_red">#FF453A</color>
+    <color name="accent_yellow">#FFD60A</color>
+    <color name="ios_green">#30D158</color>
 
-    <color name="black">#000000</color>
+    <!-- ===== 背景与表面 ===== -->
+    <color name="back_ground_color">#0A0A0C</color>
+    <color name="bg_dark">#0A0A0C</color>
+    <color name="surface_dark">#1C1C1E</color>
+    <color name="surface_glass_top">#26262A</color>
+    <color name="surface_glass_bottom">#141417</color>
+    <color name="screen_off_mask">#000000</color>
+
+    <!-- ===== 文字层级 ===== -->
+    <color name="text_default_color">#F2F2F7</color>
+    <color name="text_primary">#F2F2F7</color>
+    <color name="text_secondary">#A1A1A6</color>
+    <color name="text_hint_color">#8E8E93</color>
+    <color name="light_gray">#3A3A3C</color>
+    <color name="divider_dark">#2C2C2E</color>
+
+    <!-- ===== 状态胶囊底色 ===== -->
+    <color name="chip_blue_bg">#1A2C47</color>
+    <color name="chip_green_bg">#163A24</color>
+    <color name="chip_red_bg">#3A1B1E</color>
+    <color name="chip_yellow_bg">#3A3214</color>
+    <color name="highlight_white">#26FFFFFF</color>
+
+    <!-- ===== 强制覆盖 kt-lite 库浅色资源 → 全应用深色 ===== -->
+    <color name="lib_dialog_bg_color">#1C1C1E</color>
+    <color name="lib_text_color">#F2F2F7</color>
+    <color name="lib_hint_color">#8E8E93</color>
+    <color name="lib_line_color">#2C2C2E</color>
+    <color name="black">#FFFFFF</color>
     <color name="white">#FFFFFF</color>
-    <color name="red">#FF0000</color>
-    <color name="light_gray">#D3D3D3</color>
+    <color name="blue">#0A84FF</color>
+    <color name="green">#30D158</color>
+    <color name="red">#FF453A</color>
 </resources>

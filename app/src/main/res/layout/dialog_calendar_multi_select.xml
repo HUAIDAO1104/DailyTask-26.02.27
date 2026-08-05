@@ -8,8 +8,8 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/lib_dialog_bg_color"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_glass_card"
         android:orientation="vertical">
 
         <TextView
@@ -82,7 +82,7 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="一"
-                android:textColor="#999999"
+                android:textColor="@color/text_secondary"
                 android:textSize="@dimen/sp_12" />
 
             <TextView
@@ -91,7 +91,7 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="二"
-                android:textColor="#999999"
+                android:textColor="@color/text_secondary"
                 android:textSize="@dimen/sp_12" />
 
             <TextView
@@ -100,7 +100,7 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="三"
-                android:textColor="#999999"
+                android:textColor="@color/text_secondary"
                 android:textSize="@dimen/sp_12" />
 
             <TextView
@@ -109,7 +109,7 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="四"
-                android:textColor="#999999"
+                android:textColor="@color/text_secondary"
                 android:textSize="@dimen/sp_12" />
 
             <TextView
@@ -118,7 +118,7 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="五"
-                android:textColor="#999999"
+                android:textColor="@color/text_secondary"
                 android:textSize="@dimen/sp_12" />
 
             <TextView
@@ -127,7 +127,7 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="六"
-                android:textColor="#999999"
+                android:textColor="@color/text_secondary"
                 android:textSize="@dimen/sp_12" />
 
             <TextView
@@ -136,7 +136,7 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="日"
-                android:textColor="#999999"
+                android:textColor="@color/text_secondary"
                 android:textSize="@dimen/sp_12" />
         </LinearLayout>
 
@@ -162,7 +162,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/dp_40"
             android:gravity="center"
-            android:textColor="#999999"
+            android:textColor="@color/text_secondary"
             android:textSize="@dimen/sp_12" />
 
         <View

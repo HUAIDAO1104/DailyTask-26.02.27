@@ -1,15 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.DailyTask" parent="Theme.Material3.Light.NoActionBar">
-        <!-- 修改控件系统默认颜色 -->
+    <style name="Base.Theme.DailyTask" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- 强制深色：不跟随系统，统一 OLED 深色观感 -->
         <item name="colorPrimary">@color/theme_color</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/chip_blue_bg</item>
+        <item name="colorOnPrimaryContainer">@color/text_primary</item>
         <item name="colorSecondary">@color/theme_color</item>
-        <!-- Customize your theme here. -->
+        <item name="colorSecondaryContainer">@color/chip_blue_bg</item>
+        <item name="colorOnSecondaryContainer">@color/text_primary</item>
+        <item name="colorTertiary">@color/theme_color</item>
+
+        <item name="colorSurface">@color/surface_dark</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorSurfaceVariant">@color/surface_glass_top</item>
+        <item name="colorOnSurfaceVariant">@color/text_secondary</item>
+        <item name="colorSurfaceContainerLow">@color/surface_dark</item>
+        <item name="colorSurfaceContainerHigh">@color/surface_glass_top</item>
+        <item name="colorOutline">@color/divider_dark</item>
+        <item name="colorOutlineVariant">@color/divider_dark</item>
+        <item name="colorError">@color/accent_red</item>
+        <item name="colorOnError">@color/white</item>
+        <item name="colorControlActivated">@color/ios_green</item>
+        <item name="colorControlNormal">@color/text_secondary</item>
+
+        <item name="android:colorBackground">@color/bg_dark</item>
+        <item name="android:windowBackground">@color/bg_dark</item>
+
+        <!-- 状态栏/导航栏：深色底 + 白色图标 -->
+        <item name="android:statusBarColor">@color/bg_dark</item>
+        <item name="android:navigationBarColor">@color/bg_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+
+        <!-- 组件默认样式 -->
+        <item name="materialSwitchStyle">@style/Widget.DailyTask.Switch</item>
+        <item name="materialButtonStyle">@style/Widget.DailyTask.Button</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.DailyTask.Button.Outlined</item>
 
         <!-- 从 Android 15 开始，系统默认开启了 Edge-to-Edge 模式，这可能会导致 ImmersionBar 的一些功能失效 -->
         <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
     </style>
 
     <style name="Theme.DailyTask" parent="Base.Theme.DailyTask" />
+
+    <!-- iOS 风格开关：选中绿色轨道 + 白色圆点 -->
+    <style name="Widget.DailyTask.Switch" parent="Widget.Material3.CompoundButton.Switch">
+        <item name="android:thumbTint">@color/switch_thumb_selector</item>
+        <item name="android:trackTint">@color/switch_track_selector</item>
+        <item name="android:switchMinWidth">48dp</item>
+    </style>
+
+    <style name="Widget.DailyTask.Button" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/theme_color</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">16sp</item>
+        <item name="cornerRadius">16dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
+
+    <style name="Widget.DailyTask.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="strokeColor">@color/theme_color</item>
+        <item name="cornerRadius">16dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
 </resources>

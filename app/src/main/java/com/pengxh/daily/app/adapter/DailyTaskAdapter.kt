@@ -66,7 +66,7 @@ class DailyTaskAdapter(
             holder.itemView.isSelected = false
             holder.setVisibility(R.id.actualTimeCardView, View.GONE)
                 .setText(R.id.actualTimeView, "--:--:--")
-                .setTextColor(R.id.taskTimeView, Color.BLACK)
+                .setTextColor(R.id.taskTimeView, Color.WHITE)
             arrowView.animate().rotation(0f).setDuration(500).start()
         }
 

@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/bg_dark"
     android:keepScreenOn="true">
 
     <LinearLayout
@@ -11,131 +12,339 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/theme_color"
-            app:menu="@menu/main_top_bar_menu"
-            app:subtitleTextColor="@color/white"
-            app:titleTextColor="@color/white" />
-
+        <!-- ===== 顶部：时间 + 日期 + 操作按钮 ===== -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/back_ground_color"
-            android:keepScreenOn="true"
-            android:orientation="vertical">
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/dp_20"
+            android:paddingTop="@dimen/dp_12"
+            android:paddingBottom="@dimen/dp_8">
 
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="@dimen/dp_16"
-                android:layout_marginTop="@dimen/dp_16"
-                android:layout_marginBottom="@dimen/dp_8"
-                android:backgroundTint="@color/white"
-                app:cardCornerRadius="@dimen/dp_16"
-                app:cardElevation="1dp">
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/headerTimeView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-light"
+                    android:includeFontPadding="false"
+                    android:text="--:--:--"
+                    android:textColor="@color/text_primary"
+                    android:textSize="34sp" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/headerDateView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="加载中"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="@dimen/sp_13" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/addTaskButton"
+                android:layout_width="@dimen/dp_40"
+                android:layout_height="@dimen/dp_40"
+                android:background="@drawable/bg_status_capsule"
+                android:padding="@dimen/dp_10"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_menu_add" />
+
+            <ImageView
+                android:id="@+id/settingsButton"
+                android:layout_width="@dimen/dp_40"
+                android:layout_height="@dimen/dp_40"
+                android:layout_marginStart="@dimen/dp_12"
+                android:background="@drawable/bg_status_capsule"
+                android:padding="@dimen/dp_10"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_menu_settings" />
+        </LinearLayout>
+
+        <!-- ===== 状态行：引擎胶囊 + 刷新倒计时 ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/dp_20"
+            android:paddingBottom="@dimen/dp_4">
+
+            <TextView
+                android:id="@+id/statusCapsuleView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_status_capsule"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="5dp"
+                android:text="引擎待机"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/sp_12" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/repeatTimeView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:text="--秒后刷新每日任务"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/sp_12" />
+        </LinearLayout>
+
+        <!-- ===== 可下拉刷新区域 ===== -->
+        <com.scwang.smartrefresh.layout.SmartRefreshLayout
+            android:id="@+id/refreshView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <com.scwang.smartrefresh.layout.header.ClassicsHeader
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <androidx.core.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true"
+                android:overScrollMode="never"
+                android:scrollbars="none">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:paddingBottom="@dimen/dp_24">
 
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/repeatTimeView"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="#81007AFF"
-                        android:drawablePadding="@dimen/dp_4"
-                        android:padding="@dimen/dp_8"
-                        android:singleLine="true"
-                        android:text="--秒后刷新每日任务"
-                        android:textColor="@color/white"
-                        android:textSize="@dimen/sp_14"
-                        app:drawableStartCompat="@drawable/ic_sand" />
-
+                    <!-- ===== 今日概览卡 ===== -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="@dimen/dp_20"
+                        android:layout_marginVertical="@dimen/dp_8"
+                        android:background="@drawable/bg_glass_card"
+                        android:gravity="center_vertical"
                         android:orientation="horizontal"
-                        android:paddingHorizontal="@dimen/dp_16"
-                        android:paddingVertical="12dp">
+                        android:padding="@dimen/dp_18">
 
-                        <com.google.android.material.textview.MaterialTextView
-                            android:id="@+id/tipsView"
+                        <FrameLayout
+                            android:layout_width="92dp"
+                            android:layout_height="92dp">
+
+                            <com.pengxh.daily.app.widgets.RingProgressView
+                                android:id="@+id/ringProgressView"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent" />
+                        </FrameLayout>
+
+                        <LinearLayout
                             android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:fontFamily="sans-serif-condensed"
-                            android:gravity="center_vertical"
-                            android:hint="点击按钮开始执行任务"
-                            android:singleLine="true"
-                            android:textColor="@color/theme_color"
-                            android:textColorHint="@color/lib_hint_color"
-                            android:textSize="@dimen/sp_16"
-                            android:textStyle="bold" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/executeTaskButton"
-                            style="@style/Widget.Material3.Button.OutlinedButton.Icon"
-                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_gravity="center_vertical"
-                            android:layout_marginStart="@dimen/dp_16"
+                            android:layout_marginStart="@dimen/dp_20"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="下一项任务"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="@dimen/sp_12" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/nextTaskTimeView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:includeFontPadding="false"
+                                android:text="--:--"
+                                android:textColor="@color/text_primary"
+                                android:textSize="28sp"
+                                android:textStyle="bold" />
+
+                            <com.google.android.material.textview.MaterialTextView
+                                android:id="@+id/nextTaskDescView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:singleLine="true"
+                                android:text="等待执行"
+                                android:textColor="@color/theme_color"
+                                android:textSize="@dimen/sp_13" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/executeTaskButton"
+                            android:layout_width="88dp"
+                            android:layout_height="46dp"
+                            android:background="@drawable/bg_pill_primary"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center"
                             android:text="启动"
-                            app:icon="@mipmap/ic_start"
-                            app:iconTint="@color/ios_green"
-                            app:strokeColor="@color/theme_color" />
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/sp_15"
+                            android:textStyle="bold" />
                     </LinearLayout>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1">
-
-                <com.scwang.smartrefresh.layout.SmartRefreshLayout
-                    android:id="@+id/refreshView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <com.scwang.smartrefresh.layout.header.ClassicsHeader
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                    <!-- ===== 今日时间线 ===== -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="@dimen/dp_20"
+                        android:layout_marginTop="@dimen/dp_8"
+                        android:layout_marginBottom="@dimen/dp_8"
+                        android:text="今日时间线"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/sp_15"
+                        android:textStyle="bold" />
 
                     <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent">
+                        android:layout_height="wrap_content">
 
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/recyclerView"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:clipToPadding="false"
+                            android:nestedScrollingEnabled="false"
+                            android:overScrollMode="never"
+                            android:paddingHorizontal="@dimen/dp_4"
+                            android:scrollbars="none"
                             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-                        <com.pengxh.kt.lite.widget.EmptyView
+                        <TextView
                             android:id="@+id/emptyView"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:visibility="gone"
-                            app:show_reload_button="false" />
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="@dimen/dp_20"
+                            android:background="@drawable/bg_glass_card"
+                            android:gravity="center"
+                            android:padding="@dimen/dp_32"
+                            android:text="暂无任务\n点击右上角 ＋ 添加今日任务"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="@dimen/sp_14"
+                            android:visibility="gone" />
                     </FrameLayout>
 
-                    <com.scwang.smartrefresh.layout.footer.ClassicsFooter
+                    <!-- ===== 快捷操作 ===== -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="@dimen/dp_20"
+                        android:layout_marginTop="@dimen/dp_24"
+                        android:layout_marginBottom="@dimen/dp_8"
+                        android:text="快捷操作"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/sp_15"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                </com.scwang.smartrefresh.layout.SmartRefreshLayout>
-            </RelativeLayout>
-        </LinearLayout>
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="@dimen/dp_20">
+
+                        <LinearLayout
+                            android:id="@+id/quickLeaveLayout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/dp_8"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_glass_card_selector"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="@dimen/dp_16">
+
+                            <View
+                                android:layout_width="10dp"
+                                android:layout_height="10dp"
+                                android:background="@drawable/bg_dot_blue" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:text="请假日期"
+                                android:textColor="@color/text_primary"
+                                android:textSize="@dimen/sp_13" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/quickNoticeLayout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/dp_8"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_glass_card_selector"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="@dimen/dp_16">
+
+                            <View
+                                android:layout_width="10dp"
+                                android:layout_height="10dp"
+                                android:background="@drawable/bg_dot_green" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:text="通知记录"
+                                android:textColor="@color/text_primary"
+                                android:textSize="@dimen/sp_13" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/quickStatsLayout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_glass_card_selector"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingVertical="@dimen/dp_16">
+
+                            <View
+                                android:layout_width="10dp"
+                                android:layout_height="10dp"
+                                android:background="@drawable/bg_dot_yellow" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="6dp"
+                                android:text="本月统计"
+                                android:textColor="@color/text_primary"
+                                android:textSize="@dimen/sp_13" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.core.widget.NestedScrollView>
+
+            <com.scwang.smartrefresh.layout.footer.ClassicsFooter
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.scwang.smartrefresh.layout.SmartRefreshLayout>
     </LinearLayout>
 
+    <!-- ===== 伪灭屏蒙层（保持原样） ===== -->
     <RelativeLayout
         android:id="@+id/maskView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/black"
+        android:background="@color/screen_off_mask"
         android:visibility="gone">
 
         <TextClock
