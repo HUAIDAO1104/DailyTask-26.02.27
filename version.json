@@ -3,8 +3,8 @@
   "versionName": "2.3.0.1",
   "changelog": "1. 修复应用内检查更新偶发误报「已是最新版本」的问题：改为同时比对多个镜像并取最新版本，避免个别 CDN 缓存过期导致检测不到新版本；\n2. 下载链接改为固定版本地址，更新检测更稳定可靠。",
   "mirrors": [
-    "https://cdn.jsdelivr.net/gh/HUAIDAO1104/DailyTask-26.02.27@master/apk/daily/release/DT_20260805_2.3.0.1.apk",
-    "https://gh-proxy.com/https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/master/apk/daily/release/DT_20260805_2.3.0.1.apk",
-    "https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/master/apk/daily/release/DT_20260805_2.3.0.1.apk"
+    "https://cdn.jsdelivr.net/gh/HUAIDAO1104/DailyTask-26.02.27@d7b44e7/apk/daily/release/DT_20260805_2.3.0.1.apk",
+    "https://gh-proxy.com/https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/d7b44e7/apk/daily/release/DT_20260805_2.3.0.1.apk",
+    "https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/d7b44e7/apk/daily/release/DT_20260805_2.3.0.1.apk"
   ]
 }
