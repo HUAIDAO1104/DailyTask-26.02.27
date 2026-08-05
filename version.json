@@ -3,8 +3,8 @@
   "versionName": "2.3.0.3",
   "changelog": "1. 修复首页概览卡文字换行问题：下一项任务时间与描述保持单行，不再被挤成两行；\n2. 修复进度环内「完成数/今日进度」偏离圆心的问题，文字精确居中显示；\n3. 点击版本号立即弹出「正在检查更新…」提示，不再无响应；\n4. 缩短更新检查超时，慢速镜像快速跳过。",
   "mirrors": [
-    "https://cdn.jsdelivr.net/gh/HUAIDAO1104/DailyTask-26.02.27@16c8f41/apk/daily/release/DT_20260805_2.3.0.2.apk",
-    "https://gh-proxy.com/https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/16c8f41/apk/daily/release/DT_20260805_2.3.0.2.apk",
-    "https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/16c8f41/apk/daily/release/DT_20260805_2.3.0.2.apk"
+    "https://cdn.jsdelivr.net/gh/HUAIDAO1104/DailyTask-26.02.27@f9bf5cd/apk/daily/release/DT_20260805_2.3.0.3.apk",
+    "https://gh-proxy.com/https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/f9bf5cd/apk/daily/release/DT_20260805_2.3.0.3.apk",
+    "https://raw.githubusercontent.com/HUAIDAO1104/DailyTask-26.02.27/f9bf5cd/apk/daily/release/DT_20260805_2.3.0.3.apk"
   ]
 }
