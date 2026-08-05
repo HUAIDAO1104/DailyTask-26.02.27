@@ -11,10 +11,10 @@ import com.pengxh.daily.app.sqlite.DatabaseWrapper
 import com.pengxh.daily.app.utils.AppConfigManager
 import com.pengxh.daily.app.utils.BroadcastManager
 import com.pengxh.daily.app.utils.Constant
-import com.pengxh.daily.app.utils.LeaveDateParser
 import com.pengxh.daily.app.utils.MessageType
 import com.pengxh.daily.app.utils.SkipDates
 import com.pengxh.daily.app.utils.WeekSchedule
+import com.pengxh.daily.app.widgets.CalendarMultiSelectDialog
 import com.pengxh.daily.app.widgets.TaskMessageDialog
 import com.pengxh.kt.lite.base.KotlinBaseActivity
 import com.pengxh.kt.lite.extensions.convertColor
@@ -273,98 +273,36 @@ class TaskConfigActivity : KotlinBaseActivity<ActivityTaskConfigBinding>() {
         }
     }
 
-    /** 请假日期管理对话框：点击单条日期可移除，支持批量添加/清空 */
+    /** 请假日历多选对话框：点击日期添加/取消，支持批量选多天与单独取消某天 */
     private fun showSkipDatesDialog() {
-        val dates = SkipDates.getAll().sorted()
-        if (dates.isEmpty()) {
-            AlertDialog.Builder(this)
-                .setTitle("请假日期（当天不打卡）")
-                .setMessage(
-                    "当前没有请假日期\n\n" +
-                        "点击【添加日期】可批量添加，支持自然日期格式，多个用顿号/逗号分隔。\n" +
-                        "例如：明天、8月12日、8月12日到8月14日、下周三到下周五。\n\n" +
-                        "添加后，对应日期将全天跳过打卡。"
-                )
-                .setPositiveButton("添加日期") { _, _ -> showAddSkipDateDialog() }
-                .setNegativeButton("关闭", null)
-                .show()
-            return
-        }
-
-        // 列表展示，点击任意一条即可单个移除
-        val items = dates.map { "$it（点击移除）" }.toTypedArray()
-        AlertDialog.Builder(this)
-            .setTitle("请假日期（共 ${dates.size} 天）")
-            .setItems(items) { _, which ->
-                val date = dates[which]
-                AlertDialog.Builder(this)
-                    .setTitle("移除请假日期")
-                    .setMessage("确定将 $date 移出请假列表吗？")
-                    .setPositiveButton("移除") { _, _ ->
-                        SkipDates.remove(date)
-                        notifySkipDatesChanged()
-                        refreshSkipDatesView()
-                        "已移除：$date".show(context)
-                    }
-                    .setNegativeButton("取消", null)
-                    .show()
-            }
-            .setPositiveButton("添加") { _, _ -> showAddSkipDateDialog() }
-            .setNeutralButton("清空") { _, _ ->
-                AlertDialog.Builder(this)
-                    .setTitle("清空请假日期")
-                    .setMessage("确定清空全部 ${dates.size} 天请假日期吗？")
-                    .setPositiveButton("清空") { _, _ ->
-                        SkipDates.clear()
-                        notifySkipDatesChanged()
-                        refreshSkipDatesView()
-                        "已清空请假日期".show(context)
-                    }
-                    .setNegativeButton("取消", null)
-                    .show()
-            }
-            .setNegativeButton("关闭", null)
-            .show()
-    }
-
-    private fun showAddSkipDateDialog() {
-        AlertInputDialog.Builder()
+        CalendarMultiSelectDialog.Builder()
             .setContext(this)
-            .setTitle("添加请假日期")
-            .setHintMessage("支持自然日期，多个用顿号/逗号分隔。如：明天、8月12日、8月12日到8月14日、下周三")
-            .setNegativeButton("取消")
-            .setPositiveButton("确定")
+            .setInitialDates(SkipDates.getAll())
             .setOnDialogButtonClickListener(object :
-                AlertInputDialog.OnDialogButtonClickListener {
-                override fun onConfirmClick(value: String) {
-                    val text = value.trim()
-                    if (text.isEmpty()) {
-                        "请输入日期".show(context)
-                        return
-                    }
-                    when (val result = LeaveDateParser.parse(text)) {
-                        is LeaveDateParser.Result.NotCommand ->
-                            "无法识别为日期，请参考提示重新输入".show(context)
+                CalendarMultiSelectDialog.OnDialogButtonClickListener {
+                override fun onConfirmClick(selectedDates: List<String>) {
+                    val old = SkipDates.getAll()
+                    val newSet = selectedDates.toSet()
+                    val added = newSet - old
+                    val removed = old - newSet
+                    removed.forEach { SkipDates.remove(it) }
+                    added.forEach { SkipDates.add(it) }
+                    notifySkipDatesChanged()
+                    refreshSkipDatesView()
+                    when {
+                        added.isEmpty() && removed.isEmpty() ->
+                            "请假日期未变化".show(context)
 
-                        is LeaveDateParser.Result.Invalid ->
-                            "日期无法解析（如 2月30日），或均早于今天".show(context)
+                        added.isNotEmpty() && removed.isNotEmpty() ->
+                            "已添加 ${added.size} 天，取消 ${removed.size} 天".show(context)
 
-                        is LeaveDateParser.Result.Dates -> {
-                            val existing = SkipDates.getAll()
-                            val newCount = result.dates.count { it !in existing }
-                            result.dates.forEach { SkipDates.add(it) }
-                            notifySkipDatesChanged()
-                            refreshSkipDatesView()
-                            if (newCount == 0) {
-                                "这些日期已在请假列表中".show(context)
-                            } else {
-                                "已添加 ${newCount} 天：${result.dates.joinToString("、")}".show(context)
-                            }
-                        }
+                        added.isNotEmpty() ->
+                            "已添加 ${added.size} 天请假日期".show(context)
+
+                        else ->
+                            "已取消 ${removed.size} 天请假日期".show(context)
                     }
                 }
-
-                override fun onCancelClick() {}
             }).build().show()
     }
 
